@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "399607974641",
+    "project_id": "apprehabilitacioneuromuscular",
+    "storage_bucket": "apprehabilitacioneuromuscular.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:399607974641:android:359a7513db9ab6cee6f750",
+        "android_client_info": {
+          "package_name": "com.example.app_video_rehabilitacio_neuromuscular"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "399607974641-9hf9bffnekilqvog7art0iubriks7fqb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_t4W7JfE45yQgcLug9ypwuuIW0n2AOoE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "399607974641-9hf9bffnekilqvog7art0iubriks7fqb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
