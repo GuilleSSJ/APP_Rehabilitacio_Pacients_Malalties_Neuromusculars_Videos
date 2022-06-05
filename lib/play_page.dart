@@ -9,6 +9,7 @@ import 'package:app_video_rehabilitacio_neuromuscular/models/clips.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayPage extends StatefulWidget {
   PlayPage({Key? key, required this.arguments}) : super(key: key);
@@ -21,11 +22,12 @@ class PlayPage extends StatefulWidget {
 
 class _PlayPageState extends State<PlayPage> {
  VideoPlayerController? _controller;
+late SharedPreferences prefs;
 
   List<Video> get _clips {
     return widget.arguments.videos;
   }
-
+  
   var _playingIndex = -1;
   var _disposed = false;
   var _isFullScreen = false;
@@ -80,6 +82,11 @@ class _PlayPageState extends State<PlayPage> {
     Wakelock.enable();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     _initializeAndPlay(0);
+    SharedPreferences.getInstance().then((value) {
+    setState(() {
+      prefs = value; // Future is completed with a value.
+    });
+  });
     super.initState();
   }
 
@@ -234,6 +241,10 @@ class _PlayPageState extends State<PlayPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool? isAdmin = prefs.getBool('isAdmin');
+    if (isAdmin == null) {
+      isAdmin = false;
+    }
     return Scaffold(
        appBar: AppBar(
          backgroundColor: Colors.orange,
@@ -257,6 +268,12 @@ class _PlayPageState extends State<PlayPage> {
                 child: _listView(),
               ),
             ]),
+      floatingActionButton: isAdmin ? FloatingActionButton.extended(  
+            onPressed: () {},  
+            backgroundColor: Colors.orange,
+            icon: Icon(Icons.add),  
+            label: Text("Afegir vídeo"),  
+          ) : null
     );
   }
 

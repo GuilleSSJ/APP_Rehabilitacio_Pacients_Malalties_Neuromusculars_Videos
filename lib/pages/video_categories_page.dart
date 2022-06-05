@@ -17,6 +17,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/models.dart';
 import '../widgets/widgets.dart';
@@ -40,6 +41,7 @@ class _CategoriesState extends State<Categories> {
   late AuthProvider authProvider;
   late String currentUserId;
   late UserChat userChat;
+  late SharedPreferences prefs;
 
   @override
   void initState() {
@@ -56,6 +58,11 @@ class _CategoriesState extends State<Categories> {
     getUser().then((value) {
     setState(() {
       userChat = value; // Future is completed with a value.
+    });
+  });
+  SharedPreferences.getInstance().then((value) {
+    setState(() {
+      prefs = value; // Future is completed with a value.
     });
   });
     super.initState();
@@ -243,6 +250,10 @@ Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) asy
 
   @override
   Widget build(BuildContext context) {
+    bool? isAdmin = prefs.getBool('isAdmin');
+    if (isAdmin == null) {
+      isAdmin = false;
+    }
     return Scaffold(
       appBar: AppBar(
          backgroundColor: Colors.orange,
@@ -292,6 +303,12 @@ Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) asy
             )
           ],
         ),
+           floatingActionButton: isAdmin? FloatingActionButton.extended(  
+                  onPressed: () {},  
+                  backgroundColor: Colors.orange,
+                  icon: Icon(Icons.add),  
+                  label: Text("Nova categoria"),  
+                ) : null
     );
   }
   }
