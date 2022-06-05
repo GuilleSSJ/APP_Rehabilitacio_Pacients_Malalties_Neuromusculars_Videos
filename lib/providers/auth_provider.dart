@@ -169,7 +169,11 @@ class AuthProvider extends ChangeNotifier {
           await prefs.setString(FirestoreConstants.cognom1, documentSnapshot.get("cognom1"));
           await prefs.setString(FirestoreConstants.cognom1, documentSnapshot.get("cognom2"));
           await prefs.setString(FirestoreConstants.chattingWith, documentSnapshot.get("chattingWith"));
+          bool isAdmin = await documentSnapshot.get("isAdmin");
+          await prefs.setBool(FirestoreConstants.isAdmin, isAdmin);
+          if (!isAdmin) {
           await prefs.setStringList(FirestoreConstants.videos, documentSnapshot.get("llistaVideos").cast<String>());
+          }
         }
         _status = Status.authenticated;
         notifyListeners();

@@ -19,4 +19,5 @@ class FirestoreConstants {
   static const url = "url";
   static const videos = "llistaVideos";
   static const photoURL = "urlFoto";
+  static const isAdmin = "isAdmin";
 }

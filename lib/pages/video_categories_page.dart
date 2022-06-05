@@ -66,6 +66,20 @@ class _CategoriesState extends State<Categories> {
     DocumentSnapshot userDoc= await authProvider.getUserDocument(currentUserId);
     return UserChat.fromDocument(userDoc);
   }
+
+Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) async{
+    return await document?.get(FirestoreConstants.videos).cast<String>();
+  }
+
+  List<String> getCategoryVideosList(DocumentSnapshot document) {
+    List<String> videoList = [];
+    getCategoryVideosFutureList(document).then((value) {
+    setState(() {
+      videoList = value; // Future is completed with a value.
+    });
+  });
+  return videoList;
+  }
   
   /*Widget _buildCard(int index) {
     final clip = _clips[index];
@@ -118,6 +132,18 @@ class _CategoriesState extends State<Categories> {
   }*/
   
   Widget buildItem(BuildContext context, DocumentSnapshot? document) {
+    /*List<String> categoryVideos = [];
+    List<Video> videos = [];
+    getCategoryVideosFutureList(document).then((value) {
+    setState(() {
+      categoryVideos = value; // Future is completed with a value.
+    });
+  });
+    videoProvider.getVideoList(userChat.videos, categoryVideos, FirestoreConstants.pathVideoCollection).then((value) {
+    setState(() {
+      videos = value; // Future is completed with a value.
+    });
+  });*/
         if (document != null) {
           return Container(
             child: TextButton(
@@ -156,7 +182,7 @@ class _CategoriesState extends State<Categories> {
                         : */Icon(
                             Icons.task,
                             size: 50,
-                            color: Colors.orange,
+                            color:Colors.orange,
                           ),
                     borderRadius: BorderRadius.all(Radius.circular(25)),
                     clipBehavior: Clip.hardEdge,
@@ -167,7 +193,7 @@ class _CategoriesState extends State<Categories> {
                         children: <Widget>[
                           Container(
                             child: Text(
-                              document?.get('nom'),
+                              document.get('nom'),
                               maxLines: 1,
                               style: TextStyle(color: ColorConstants.primaryColor),
                             ),
@@ -182,7 +208,7 @@ class _CategoriesState extends State<Categories> {
                 ],
               ),
               onPressed: () async {
-                List<String> categoryVideos = document.get(FirestoreConstants.videos).cast<String>();
+                List<String> categoryVideos = await document.get(FirestoreConstants.videos).cast<String>();
                 List<Video> videos = await videoProvider.getVideoList(userChat.videos, categoryVideos, FirestoreConstants.pathVideoCollection);
                 if (videos.isNotEmpty) {
                 Navigator.push(

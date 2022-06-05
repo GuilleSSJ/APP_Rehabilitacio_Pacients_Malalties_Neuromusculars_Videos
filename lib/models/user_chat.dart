@@ -6,15 +6,16 @@ class UserChat {
   String cognom1;
   String cognom2;
   String nom;
+  bool isAdmin;
   List<String> videos;
 
-  UserChat({required this.id, required this.nom, required this.cognom1, required this.cognom2, required this.videos});
+  UserChat({required this.id, required this.nom, required this.cognom1, required this.cognom2, required this.videos, required this.isAdmin});
 
   Map<String, String> toJson() {
     return {
         FirestoreConstants.nom: nom,
       FirestoreConstants.cognom1: cognom1,
-      FirestoreConstants.cognom2: cognom2,
+      FirestoreConstants.cognom2: cognom2
     };
   }
 
@@ -23,6 +24,7 @@ class UserChat {
     String cognom1 = "";
     String cognom2 = "";
     List<String> videos = [];
+    bool isAdmin = false;
     try {
       nom = doc.get(FirestoreConstants.nom);
     } catch (e) {}
@@ -35,12 +37,16 @@ class UserChat {
     try {
       videos = doc.get(FirestoreConstants.videos).cast<String>();
     } catch (e) {}
+    try {
+      isAdmin = doc.get(FirestoreConstants.isAdmin);
+    } catch (e) {}
     return UserChat(
       id: doc.id,
       nom: nom,
       cognom1: cognom1,
       cognom2: cognom2,
-      videos: videos
+      videos: videos,
+      isAdmin: isAdmin, 
     );
   }
 }
