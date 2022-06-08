@@ -1,9 +1,12 @@
 import 'package:app_video_rehabilitacio_neuromuscular/principal.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/color_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../models/nvr_user.dart';
 import 'pages.dart';
 
 class SplashPage extends StatefulWidget {
@@ -14,6 +17,8 @@ class SplashPage extends StatefulWidget {
 }
 
 class SplashPageState extends State<SplashPage> {
+  get authProvider => null;
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +43,11 @@ class SplashPageState extends State<SplashPage> {
       MaterialPageRoute(builder: (context) => LoginPage()),
     );
     }
+  }
+
+  Future<NVRUser> getUser() async{
+    DocumentSnapshot userDoc= await authProvider.getUserDocument();
+    return NVRUser.fromDocument(userDoc);
   }
 
   @override

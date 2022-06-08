@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
 import 'package:http/http.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/video.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/clips.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -22,12 +24,24 @@ class PlayPage extends StatefulWidget {
 
 class _PlayPageState extends State<PlayPage> {
  VideoPlayerController? _controller;
-late SharedPreferences prefs;
+ late CategoryProvider videoProvider;
+ late bool isAdmin;
+ late List<bool> assignedVideos;
 
   List<Video> get _clips {
     return widget.arguments.videos;
   }
+
+   List<String> get _userVideos {
+    return widget.arguments.userVideos;
+  }
+
+    List<String> get _categoryVideos {
+    return widget.arguments.categoryVideos;
+  }
   
+  String patientId = "";
+
   var _playingIndex = -1;
   var _disposed = false;
   var _isFullScreen = false;
@@ -79,14 +93,16 @@ late SharedPreferences prefs;
 
   @override
   void initState() {
+    videoProvider = context.read<CategoryProvider>();
+    patientId = videoProvider.getPref("chattingWith")!;
+    assignedVideos = List.filled(_categoryVideos.length, false);
     Wakelock.enable();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     _initializeAndPlay(0);
-    SharedPreferences.getInstance().then((value) {
-    setState(() {
-      prefs = value; // Future is completed with a value.
-    });
-  });
+    isAdmin = videoProvider.getBoolPref("isAdmin")!;
+    if (isAdmin) {
+      checkAssignedVideos(_userVideos, _categoryVideos);
+    }
     super.initState();
   }
 
@@ -241,16 +257,12 @@ late SharedPreferences prefs;
 
   @override
   Widget build(BuildContext context) {
-    bool? isAdmin = prefs.getBool('isAdmin');
-    if (isAdmin == null) {
-      isAdmin = false;
-    }
     return Scaffold(
        appBar: AppBar(
          backgroundColor: Colors.orange,
         centerTitle: true,
         title: Text(
-          'Vídeos',
+          widget.arguments.categoryName,
           style: TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
         ),
       ),
@@ -506,6 +518,10 @@ late SharedPreferences prefs;
   Widget _buildCard(int index) {
     final clip = _clips[index];
     final playing = index == _playingIndex;
+    bool isAssigned = false;
+    if (isAdmin && assignedVideos.length > 0) {
+      isAssigned = assignedVideos[index];
+    }
     /*String runtime;
     if (clip.runningTime > 60) {
       runtime = "${clip.runningTime ~/ 60}' ${clip.runningTime % 60}''";
@@ -540,22 +556,91 @@ late SharedPreferences prefs;
             ),
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: playing
-                  ? Icon(Icons.play_arrow)
-                  : Icon(
-                      Icons.play_arrow,
-                      color: Colors.grey.shade300,
-                    ),
-            ),
+              child: isAdmin ? 
+              ElevatedButton(
+                onPressed: () {
+                  setState(
+                    () {
+                     showAlertDialog(context, index, isAssigned);
+                     
+                    },
+                  );
+                },
+                child: !isAssigned ? Text('Assignar', style:TextStyle(color: Colors.white)) :
+                Icon(Icons.check, color: Colors.white,) ,
+                 style: ElevatedButton.styleFrom(
+                primary: Colors.orange,
+                )) :
+              Icon(
+                Icons.play_arrow,
+              ),
+  ),
           ],
         ),
       ),
+      color: playing ? Colors.blue : Colors.white
     );
   }
+
+
+void checkAssignedVideos(List<String> userVideos, List<String> categoryVideos) {
+    for (var i = 0; i < userVideos.length; i++) {
+      int index = categoryVideos.indexOf(userVideos[i]);
+      if (index >= 0) {
+      assignedVideos[index] = true;
+      }
+  }
+}
+
+showAlertDialog(BuildContext context, int index, bool isAssigned) {
+  // set up the buttons
+  Widget cancelButton = FlatButton(
+    child: Text("Cancel·lar"),
+    onPressed:  () {
+      Navigator.of(context).pop();
+    },
+  );
+  Widget continueButton = FlatButton(
+    child: Text("OK"),
+    onPressed:  () {
+      String categoryVideoId = _categoryVideos[index];
+      if (!isAssigned && !_userVideos.contains(categoryVideoId)) {
+      _userVideos.add(categoryVideoId);
+      }
+      else {
+        _userVideos.remove(categoryVideoId);
+      }
+      assignedVideos[index] = !isAssigned;
+      isAssigned = assignedVideos[index];
+      videoProvider.updateActivitiesList(patientId, _userVideos);
+       Navigator.of(context).pop();
+    },
+  );
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text("Alerta de confirmació"),
+    content: assignedVideos[index] ? Text("Segur que vols treure l'activitat al pacient?") : Text("Segur que vols assignar l'activitat al pacient?"),
+    actions: [
+      cancelButton,
+      continueButton,
+    ],
+  );
+  // show the dialog
+
+showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
 }
 
 class PlayPageArguments {
   final List<Video> videos;
+  final List<String> userVideos;
+  final String categoryName;
+  final List<String> categoryVideos;
 
-  PlayPageArguments({required this.videos});
+  PlayPageArguments({required this.videos, required this.userVideos, required this.categoryName, required this.categoryVideos});
 }

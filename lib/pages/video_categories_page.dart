@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:app_video_rehabilitacio_neuromuscular/models/video.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/login_page.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/play_page.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/play_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -24,7 +24,7 @@ import '../widgets/widgets.dart';
 
 
 class Categories extends StatefulWidget {
-  const Categories({ Key? key }) : super(key: key);
+  const Categories({Key? key}) : super(key: key);
 
   @override
   State<Categories> createState() => _CategoriesState();
@@ -40,8 +40,9 @@ class _CategoriesState extends State<Categories> {
   late CategoryProvider videoProvider;
   late AuthProvider authProvider;
   late String currentUserId;
-  late UserChat userChat;
-  late SharedPreferences prefs;
+  bool isAdmin = false;
+  List<String> userVideos = [];
+  late NVRUser nvrUser;
 
   @override
   void initState() {
@@ -55,23 +56,30 @@ class _CategoriesState extends State<Categories> {
         (Route<dynamic> route) => false,
       );
     }
-    getUser().then((value) {
+   getUser().then((value) {
     setState(() {
-      userChat = value; // Future is completed with a value.
+      nvrUser = value;
+      isAdmin = videoProvider.getBoolPref("isAdmin")!;
+      if (isAdmin) {
+      String patientId = videoProvider.getPref("chattingWith")!;
+      setUserVideo(patientId);
+      } // Future is completed with a value.
     });
   });
-  SharedPreferences.getInstance().then((value) {
-    setState(() {
-      prefs = value; // Future is completed with a value.
-    });
-  });
-    super.initState();
+  super.initState();
   }
-  
 
-  Future<UserChat> getUser() async{
+  void setUserVideo(String patientId){
+     videoProvider.getPatientAssignedVideos(patientId).then((value) {
+    setState(() {
+      userVideos = value;
+    });
+    });
+  }
+
+  Future<NVRUser> getUser() async{
     DocumentSnapshot userDoc= await authProvider.getUserDocument(currentUserId);
-    return UserChat.fromDocument(userDoc);
+    return NVRUser.fromDocument(userDoc);
   }
 
 Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) async{
@@ -157,36 +165,7 @@ Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) asy
               child: Row(
                 children: <Widget>[
                   Material(
-                    child: /*userChat.photoUrl.isNotEmpty
-                        ? Image.network(
-                            userChat.photoUrl,
-                            fit: BoxFit.cover,
-                            width: 50,
-                            height: 50,
-                            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                width: 50,
-                                height: 50,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: ColorConstants.themeColor,
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, object, stackTrace) {
-                              return Icon(
-                                Icons.account_circle,
-                                size: 50,
-                                color: ColorConstants.greyColor,
-                              );
-                            },
-                          )
-                        : */Icon(
+                    child: Icon(
                             Icons.task,
                             size: 50,
                             color:Colors.orange,
@@ -216,14 +195,17 @@ Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) asy
               ),
               onPressed: () async {
                 List<String> categoryVideos = await document.get(FirestoreConstants.videos).cast<String>();
-                List<Video> videos = await videoProvider.getVideoList(userChat.videos, categoryVideos, FirestoreConstants.pathVideoCollection);
+                List<Video> videos = await videoProvider.getVideoList(nvrUser.videos, categoryVideos, FirestoreConstants.pathVideoCollection, isAdmin);
                 if (videos.isNotEmpty) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => PlayPage(
                       arguments: PlayPageArguments(
-                        videos: videos
+                        videos: videos,
+                        userVideos: userVideos,
+                        categoryName: document.get('nom'),
+                        categoryVideos: categoryVideos
                       ),
                     ),
                   ),
@@ -250,10 +232,6 @@ Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) asy
 
   @override
   Widget build(BuildContext context) {
-    bool? isAdmin = prefs.getBool('isAdmin');
-    if (isAdmin == null) {
-      isAdmin = false;
-    }
     return Scaffold(
       appBar: AppBar(
          backgroundColor: Colors.orange,
@@ -303,7 +281,7 @@ Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) asy
             )
           ],
         ),
-           floatingActionButton: isAdmin? FloatingActionButton.extended(  
+           floatingActionButton: isAdmin ? FloatingActionButton.extended(  
                   onPressed: () {},  
                   backgroundColor: Colors.orange,
                   icon: Icon(Icons.add),  

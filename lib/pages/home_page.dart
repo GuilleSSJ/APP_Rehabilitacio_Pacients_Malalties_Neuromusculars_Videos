@@ -390,8 +390,8 @@ class HomePageState extends State<HomePage> {
 
   Widget buildItem(BuildContext context, DocumentSnapshot? document) {
     if (document != null) {
-      UserChat userChat = UserChat.fromDocument(document);
-      if (userChat.id == currentUserId) {
+      NVRUser nvrUser = NVRUser.fromDocument(document);
+      if (nvrUser.id == currentUserId) {
         return SizedBox.shrink();
       } else {
         return Container(
@@ -442,7 +442,7 @@ class HomePageState extends State<HomePage> {
                       children: <Widget>[
                         Container(
                           child: Text(
-                            'Nom: ${userChat.nom}',
+                            'Nom: ${nvrUser.nom}',
                             maxLines: 1,
                             style: TextStyle(color: ColorConstants.primaryColor),
                           ),
@@ -451,7 +451,7 @@ class HomePageState extends State<HomePage> {
                         ),
                         Container(
                           child: Text(
-                            "Cognoms: ${userChat.cognom1} ${userChat.cognom2}",
+                            "Cognoms: ${nvrUser.cognom1} ${nvrUser.cognom2}",
                             maxLines: 1,
                             style: TextStyle(color: ColorConstants.primaryColor),
                           ),
@@ -474,10 +474,10 @@ class HomePageState extends State<HomePage> {
                 MaterialPageRoute(
                   builder: (context) => ChatPage(
                     arguments: ChatPageArguments(
-                      peerId: userChat.id,
-                      peerNom: userChat.nom,
-                      peerCognom1: userChat.cognom1,
-                      peerCognom2: userChat.cognom2,
+                      peerId: nvrUser.id,
+                      peerNom: nvrUser.nom,
+                      peerCognom1: nvrUser.cognom1,
+                      peerCognom2: nvrUser.cognom2,
                     ),
                   ),
                 ),

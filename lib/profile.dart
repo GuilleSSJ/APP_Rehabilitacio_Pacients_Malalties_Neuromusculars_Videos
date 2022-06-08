@@ -1,5 +1,4 @@
 import 'package:app_video_rehabilitacio_neuromuscular/constants/constants.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/loginForm.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

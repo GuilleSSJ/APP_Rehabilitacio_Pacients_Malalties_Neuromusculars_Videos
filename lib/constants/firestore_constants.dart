@@ -6,6 +6,8 @@ class FirestoreConstants {
   static const nom = "nom";
   static const cognom1 = "cognom1";
   static const cognom2 = "cognom2";
+  static const nhc = "nhc";
+  static const edat = "edat";
   static const id = "id";
   static const chattingWith = "chattingWith";
   static const idFrom = "idFrom";
@@ -20,4 +22,5 @@ class FirestoreConstants {
   static const videos = "llistaVideos";
   static const photoURL = "urlFoto";
   static const isAdmin = "isAdmin";
+  static const llistaPacients = "llistaPacients";
 }

@@ -17,6 +17,10 @@ class CategoryProvider {
     return prefs.getString(key);
   }
 
+   bool? getBoolPref(String key) {
+    return prefs.getBool(key);
+  }
+
   UploadTask uploadFile(File image, String fileName) {
     Reference reference = firebaseStorage.ref().child(fileName);
     UploadTask uploadTask = reference.putFile(image);
@@ -31,10 +35,12 @@ class CategoryProvider {
     return firebaseFirestore.collection(pathCollection).orderBy('id').limit(limit).snapshots();
   }
 
-  Future<List<Video>> getVideoList(List<String> userVideos, List<String> categoryVideos, String pathCollection) async {
+  Future<List<Video>> getVideoList(List<String> userVideos, List<String> categoryVideos, String pathCollection, bool isAdmin) async {
     List<Video> resultList = [];
     
-    categoryVideos.removeWhere((item) => !userVideos.contains(item));
+    if (!isAdmin) {
+      categoryVideos.removeWhere((item) => !userVideos.contains(item));
+    }
 
     firebaseFirestore.collection(pathCollection).orderBy('id').snapshots();
 
@@ -43,6 +49,7 @@ class CategoryProvider {
             .collection(FirestoreConstants.pathVideoCollection)
             .where(FirestoreConstants.videoId, isEqualTo: videoId)
             .get();
+      if (result.docs.isNotEmpty) {
       final DocumentSnapshot videoDoc = result.docs[0];
       FirebaseStorage firebaseStorage = FirebaseStorage.instance;
       final imageStorageURL = videoDoc.get(FirestoreConstants.photoURL);
@@ -51,7 +58,27 @@ class CategoryProvider {
       final videoURL = await firebaseStorage.refFromURL(videoStorageURL).getDownloadURL();
       Video video = Video.fromDocument(videoDoc, videoURL.toString(), imageURL.toString());
       resultList.add(video);
+      }
   }
   return resultList;
+}
+
+
+  Future<List<String>> getPatientAssignedVideos(String patientId) async {
+    List<String> assignedVideos = [];
+     final QuerySnapshot result = await firebaseFirestore
+            .collection(FirestoreConstants.pathUserCollection)
+            .where(FirestoreConstants.id, isEqualTo: patientId)
+            .get();
+
+    final List<DocumentSnapshot> documents = result.docs;
+    if (documents.length > 0) {
+      assignedVideos = documents[0].get("llistaVideos").cast<String>();
+    }
+    return assignedVideos;
+}
+
+void updateActivitiesList(patientId, List<String> assignedVideos) {
+  FirebaseFirestore.instance.collection(FirestoreConstants.pathUserCollection).doc(patientId).update({'llistaVideos': assignedVideos});
 }
 }

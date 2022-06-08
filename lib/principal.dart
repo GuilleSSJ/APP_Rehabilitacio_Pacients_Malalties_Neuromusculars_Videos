@@ -1,15 +1,16 @@
 import 'package:app_video_rehabilitacio_neuromuscular/constants/firestore_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/conversationPage.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/models/user_chat.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/models/nvr_user.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/home_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/login_page.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/patients_list.page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/video_categories_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/home_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/providers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/profile.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/play_page.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/play_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/clips.dart';
 import 'package:provider/provider.dart';
 //import 'package:firebase_core/firebase_core.dart';
@@ -27,8 +28,10 @@ class _PagePrincipalState extends State<PagePrincipal> {
   late HomeProvider homeProvider;
   late AuthProvider authProvider;
   late String currentUserId;
-  late UserChat userChat;
+  late NVRUser nvrUser;
   late final List<Widget> pantallas;
+  bool isAdmin = false;
+
   void _onItemTapped(int index) {
     setState(() {
       selectedIndex = index;
@@ -37,21 +40,20 @@ class _PagePrincipalState extends State<PagePrincipal> {
 
    @override
   void initState() {
+    authProvider = context.read<AuthProvider>();
+    isAdmin = authProvider.getBoolPref("isAdmin")!;
     pantallas = [
     Categories(),
-    /*ChatPage(arguments: ChatPageArguments(
-                        peerId: userChat.id,
-                        peerAvatar: userChat.photoUrl,
-                        peerNickname: userChat.nickname,
-                      ),
-    ),
-    */
     HomePage(),
     Profile(),
   ];
-    super.initState();
-  }
 
+   if (isAdmin) {
+     pantallas[0] = PatientsList();
+   }
+
+    super.initState();
+  } 
   
   @override
   Widget build(BuildContext context) {

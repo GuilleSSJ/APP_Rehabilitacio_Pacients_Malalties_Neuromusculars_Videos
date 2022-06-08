@@ -1,44 +1,26 @@
-import 'package:app_video_rehabilitacio_neuromuscular/providers/auth_provider.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/services/database.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/models/video.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/login_page.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/play_page.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
-import 'principal.dart';
 
+class UploadVideo extends StatefulWidget {
+  const UploadVideo({ Key? key }) : super(key: key);
 
-class LoginForm extends StatefulWidget {
   @override
-  _LoginFormState createState() => _LoginFormState();
+  State<UploadVideo> createState() => _UploadVideoState();
 }
 
-class _LoginFormState extends State<LoginForm> {
-// Create a text controller. Later, use it to retrieve the
-  // current value of the TextField.
-  final _emailController = TextEditingController();
+class _UploadVideoState extends State<UploadVideo> {
+   final _emailController = TextEditingController();
   final _passwdController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _validEmail = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
-  late AuthProvider authProvider;
-  
-  static Future<bool> login({required String nhc, required BuildContext context}) async {
-    var blnRet;
-    try{
-      DataBaseService dataBaseService = new DataBaseService();
-      blnRet = dataBaseService.loginWithNHC(nhc);
-    } on Exception catch (e) {
-        print("No s'ha trobat cap usuari amb aquest NHC." + "Error: " + e.toString());
-      }
-    return blnRet;
-  }
+  bool _isObscure = true;
 
-
-  @override
-  void initState() {
-    authProvider = context.read<AuthProvider>();
-    super.initState();
-  }
-
-  @override
+   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
     // widget tree.
@@ -67,38 +49,16 @@ class _LoginFormState extends State<LoginForm> {
       return null;
   }
 
+
   @override
   Widget build(BuildContext context) {
-    switch (authProvider.status) {
-      case Status.authenticateError:
-        Fluttertoast.showToast(msg: "Sign in fail");
-        break;
-      case Status.authenticateCanceled:
-        Fluttertoast.showToast(msg: "Sign in canceled");
-        break;
-      case Status.authenticated:
-        Fluttertoast.showToast(msg: "Sign in success");
-        break;
-      default:
-        break;
-    }
-    return Scaffold(
+     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 60.0, bottom: 60),
-              child: Center(
-                child: Container(
-                    width: 200,
-                    height: 150,
-                    child: Image.asset('images/stPau_logo.jpg'),
-                    ),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 20),
               child: TextFormField(
@@ -114,11 +74,21 @@ class _LoginFormState extends State<LoginForm> {
             Padding(
               padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 20),
               child: TextFormField(
+                obscureText: _isObscure,
                 controller: _passwdController,
                 decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Contrasenya',
-                    hintText: "Introdueix la teva contrasenya"
+                    hintText: "Introdueix la teva contrasenya",
+                    suffixIcon: IconButton(
+                          icon: Icon(_isObscure
+                              ? Icons.visibility_off
+                              : Icons.visibility),
+                          onPressed: () {
+                            setState(() {
+                              _isObscure = !_isObscure;
+                            });
+                          }),
                     ),
                 validator: validatePassword,
               ),
@@ -132,18 +102,21 @@ class _LoginFormState extends State<LoginForm> {
               decoration: BoxDecoration(
                   color: Colors.orange, borderRadius: BorderRadius.circular(20)),
               child: FlatButton(
-                onPressed: () async {/*
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                  bool isSuccess = await authProvider.handleSignIn();
-                  if (isSuccess) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PagePrincipal(),
+                  if (true) {
+                        /*Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PlayPage(
+                      arguments: PlayPageArguments(
+                        videos: videos
                       ),
-                    );
+                    ),
+                  ),
+                );*/
                   }
-                 }*/
+                 }
                 },
                 
                 child: Text(
@@ -152,22 +125,6 @@ class _LoginFormState extends State<LoginForm> {
                 ),
               ),
             ),
-            /*SizedBox(
-              height: 110,
-            ),
-            FlatButton(
-              onPressed: (){
-                 Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (context) => RegisterForm(),
-                              ),
-                 );
-              },
-              child: Text(
-                'Nuevo Usuario? Regístrate gratis.',
-                style: TextStyle(color: Colors.orange, fontSize: 15),
-              ),
-            ),*/
           ],
         ),
       ),

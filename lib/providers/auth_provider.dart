@@ -41,6 +41,10 @@ class AuthProvider extends ChangeNotifier {
     return prefs.getString(FirestoreConstants.chattingWith);
   }
 
+     bool? getBoolPref(String key) {
+    return prefs.getBool(key);
+  }
+
    bool isLoggedIn()  {
     if (FirebaseAuth.instance.currentUser?.uid != null) {
         return true;
@@ -162,7 +166,7 @@ class AuthProvider extends ChangeNotifier {
         } else {
           // Already sign up, just get data from firestore
           DocumentSnapshot documentSnapshot = documents[0];
-          UserChat userChat = UserChat.fromDocument(documentSnapshot);
+          NVRUser userChat = NVRUser.fromDocument(documentSnapshot);
           // Write data to local
           await prefs.setString(FirestoreConstants.id, userChat.id);
           await prefs.setString(FirestoreConstants.nom, userChat.nom);
@@ -173,6 +177,11 @@ class AuthProvider extends ChangeNotifier {
           await prefs.setBool(FirestoreConstants.isAdmin, isAdmin);
           if (!isAdmin) {
           await prefs.setStringList(FirestoreConstants.videos, documentSnapshot.get("llistaVideos").cast<String>());
+          await prefs.setString(FirestoreConstants.nhc, documentSnapshot.get("nhc"));
+          await prefs.setInt(FirestoreConstants.edat, documentSnapshot.get("edat"));
+          }
+          else {
+          await prefs.setStringList(FirestoreConstants.llistaPacients, documentSnapshot.get("llistaPacients").cast<String>());
           }
         }
         _status = Status.authenticated;
@@ -190,12 +199,13 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<DocumentSnapshot> getUserDocument(userId) async {
+  Future<DocumentSnapshot> getUserDocument(String currentUserId) async {
     final QuerySnapshot result = await firebaseFirestore
             .collection(FirestoreConstants.pathUserCollection)
-            .where(FirestoreConstants.id, isEqualTo: userId)
+            .where(FirestoreConstants.id, isEqualTo: currentUserId)
             .get();
     return result.docs[0];
 
   }
+  
 }

@@ -33,4 +33,8 @@ class Video {
     String photoURL = imageURL;
     return Video(videoId: videoId, categoryId: categoryId, title: title, url: url, photoURL:photoURL);
   }
+
+  String getVideoID() {
+    return videoId;
+  }
 }
