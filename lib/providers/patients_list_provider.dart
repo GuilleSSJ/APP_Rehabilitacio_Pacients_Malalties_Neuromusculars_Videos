@@ -70,4 +70,25 @@ class PatientsListProvider {
     }
     return resultList;
   }
+
+  Future<List<Video>> getUserVideoList(List<String> userVideos) async {
+    List<Video> resultList = [];
+      final QuerySnapshot result = await firebaseFirestore
+            .collection(FirestoreConstants.pathVideoCollection)
+            .where(FirestoreConstants.videoId, whereIn: userVideos)
+            .get();
+      final List<DocumentSnapshot> documents = result.docs;
+      if (documents.isNotEmpty) {
+        for (DocumentSnapshot videoDoc in documents) {
+          FirebaseStorage firebaseStorage = FirebaseStorage.instance;
+          final imageStorageURL = videoDoc.get(FirestoreConstants.photoURL);
+          final videoStorageURL = videoDoc.get(FirestoreConstants.url);
+          final imageURL = await firebaseStorage.refFromURL(imageStorageURL).getDownloadURL();
+          final videoURL = await firebaseStorage.refFromURL(videoStorageURL).getDownloadURL();
+          Video video = Video.fromDocument(videoDoc, videoURL.toString(), imageURL.toString());
+          resultList.add(video);
+       }
+  }
+  return resultList;
+}
 }

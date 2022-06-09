@@ -1,3 +1,4 @@
+import 'package:app_video_rehabilitacio_neuromuscular/pages/manage_videos_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/patients_list_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -82,19 +83,7 @@ class _PatientsListState extends State<PatientsList> {
       });
   }
 
-  /*Stream<QuerySnapshot> getPatientsStreamFireStore(List<String> patientsIdList) {
-    var patientsSnapshots = patientListProvider.getPatientsStreamFireStore(patientsIdList);
-    patientListProvider.getPatientsList(patientsIdList, FirestoreConstants.pathUserCollection).then((value) {
-      setState(()  {
-        _patientsList = value;
-        _foundPatients = _patientsList;
-      });
-    });   
-    return patientsSnapshots;
-  }*/
-
-  Widget buildItem(BuildContext context, NVRUser nvrUser, int index) {
-    if (nvrUser != null) {
+  Widget buildItem(BuildContext context, NVRUser nvrUser) {
       return Card(
         key: ValueKey(nvrUser.getNHC()),
         color: Colors.orange,
@@ -110,11 +99,24 @@ class _PatientsListState extends State<PatientsList> {
             subtitle: Text(
               '${nvrUser.getAge().toString()} anys',
               style: const TextStyle(fontSize: 16, color: Colors.white),
-            )),
+            ),
+            onTap: () async {
+              List<Video> userVideos = await patientListProvider.getUserVideoList(nvrUser.videos);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ManageVideos(
+                      arguments: ManageVideosArguments(
+                        userVideos: nvrUser.videos,
+                        videos: userVideos,
+                        patientId: nvrUser.id
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
       );
-    } else {
-      return SizedBox.shrink();
-    }
   }
 
   @override
@@ -152,7 +154,7 @@ class _PatientsListState extends State<PatientsList> {
                       return ListView.builder(
                         padding: EdgeInsets.all(10),
                         itemBuilder: (context, index) => buildItem(
-                            context, snapshot.data!.elementAt(index), index),
+                            context, snapshot.data!.elementAt(index)),
                         itemCount: snapshot.data?.length,
                       );
                     } else {

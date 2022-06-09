@@ -14,9 +14,10 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayPage extends StatefulWidget {
-  PlayPage({Key? key, required this.arguments}) : super(key: key);
+  PlayPage({Key? key, required this.arguments, this.patientId = ""}) : super(key: key);
 
   final PlayPageArguments arguments;
+  final String patientId;
 
   @override
   _PlayPageState createState() => _PlayPageState();
@@ -39,8 +40,6 @@ class _PlayPageState extends State<PlayPage> {
     List<String> get _categoryVideos {
     return widget.arguments.categoryVideos;
   }
-  
-  String patientId = "";
 
   var _playingIndex = -1;
   var _disposed = false;
@@ -94,7 +93,6 @@ class _PlayPageState extends State<PlayPage> {
   @override
   void initState() {
     videoProvider = context.read<CategoryProvider>();
-    patientId = videoProvider.getPref("chattingWith")!;
     assignedVideos = List.filled(_categoryVideos.length, false);
     Wakelock.enable();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
@@ -612,7 +610,7 @@ showAlertDialog(BuildContext context, int index, bool isAssigned) {
       }
       assignedVideos[index] = !isAssigned;
       isAssigned = assignedVideos[index];
-      videoProvider.updateActivitiesList(patientId, _userVideos);
+      videoProvider.updateActivitiesList(widget.patientId, _userVideos);
        Navigator.of(context).pop();
     },
   );

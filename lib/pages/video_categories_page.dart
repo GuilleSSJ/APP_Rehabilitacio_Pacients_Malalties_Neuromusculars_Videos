@@ -24,7 +24,8 @@ import '../widgets/widgets.dart';
 
 
 class Categories extends StatefulWidget {
-  const Categories({Key? key}) : super(key: key);
+  const Categories({Key? key, this.patientId = ""}) : super(key: key);
+  final String patientId;
 
   @override
   State<Categories> createState() => _CategoriesState();
@@ -61,15 +62,14 @@ class _CategoriesState extends State<Categories> {
       nvrUser = value;
       isAdmin = videoProvider.getBoolPref("isAdmin")!;
       if (isAdmin) {
-      String patientId = videoProvider.getPref("chattingWith")!;
-      setUserVideo(patientId);
+      setUserVideos(widget.patientId);
       } // Future is completed with a value.
     });
   });
   super.initState();
   }
 
-  void setUserVideo(String patientId){
+  void setUserVideos(String patientId){
      videoProvider.getPatientAssignedVideos(patientId).then((value) {
     setState(() {
       userVideos = value;
@@ -96,69 +96,8 @@ Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) asy
   return videoList;
   }
   
-  /*Widget _buildCard(int index) {
-    final clip = _clips[index];
-    final playing = index == _playingIndex;
-    String runtime;
-    if (clip.runningTime > 60) {
-      runtime = "${clip.runningTime ~/ 60}' ${clip.runningTime % 60}''";
-    } else {
-      runtime = "${clip.runningTime % 60}''";
-    }
-    return Card(
-      child: Container(
-        padding: EdgeInsets.all(4),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(right: 8),
-              child: clip.parent.startsWith("http")
-                  ? Image.network(clip.thumbPath(), width: 70, height: 50, fit: BoxFit.fill)
-                  : Image.asset(clip.thumbPath(), width: 70, height: 50, fit: BoxFit.fill),
-            ),
-            Expanded(
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(clip.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Padding(
-                      child: Text("$runtime", style: TextStyle(color: Colors.grey[500])),
-                      padding: EdgeInsets.only(top: 3),
-                    )
-                  ]),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: playing
-                  ? Icon(Icons.play_arrow)
-                  : Icon(
-                      Icons.play_arrow,
-                      color: Colors.grey.shade300,
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }*/
   
   Widget buildItem(BuildContext context, DocumentSnapshot? document) {
-    /*List<String> categoryVideos = [];
-    List<Video> videos = [];
-    getCategoryVideosFutureList(document).then((value) {
-    setState(() {
-      categoryVideos = value; // Future is completed with a value.
-    });
-  });
-    videoProvider.getVideoList(userChat.videos, categoryVideos, FirestoreConstants.pathVideoCollection).then((value) {
-    setState(() {
-      videos = value; // Future is completed with a value.
-    });
-  });*/
         if (document != null) {
           return Container(
             child: TextButton(
@@ -207,6 +146,7 @@ Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) asy
                         categoryName: document.get('nom'),
                         categoryVideos: categoryVideos
                       ),
+                      patientId: widget.patientId,
                     ),
                   ),
                 );
