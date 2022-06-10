@@ -73,6 +73,7 @@ class PatientsListProvider {
 
   Future<List<Video>> getUserVideoList(List<String> userVideos) async {
     List<Video> resultList = [];
+    if (userVideos.isNotEmpty) {
       final QuerySnapshot result = await firebaseFirestore
             .collection(FirestoreConstants.pathVideoCollection)
             .where(FirestoreConstants.videoId, whereIn: userVideos)
@@ -88,7 +89,8 @@ class PatientsListProvider {
           Video video = Video.fromDocument(videoDoc, videoURL.toString(), imageURL.toString());
           resultList.add(video);
        }
-  }
+      }
+    }
   return resultList;
 }
 }

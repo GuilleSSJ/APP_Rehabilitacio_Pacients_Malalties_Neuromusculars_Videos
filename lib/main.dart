@@ -5,6 +5,7 @@ import 'package:app_video_rehabilitacio_neuromuscular/pages/patients_list.page.d
 import 'package:app_video_rehabilitacio_neuromuscular/providers/auth_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/chat_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/home_provider.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/providers/manage_videos_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/patients_list_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/setting_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
@@ -75,6 +76,13 @@ class MyApp extends StatelessWidget {
         ),
         Provider<PatientsListProvider>(
           create: (_) => PatientsListProvider(
+            prefs: this.prefs,
+            firebaseFirestore: this.firebaseFirestore,
+            firebaseStorage: this.firebaseStorage,
+          ),
+        ),
+           Provider<ManageVideosProvider>(
+          create: (_) => ManageVideosProvider(
             prefs: this.prefs,
             firebaseFirestore: this.firebaseFirestore,
             firebaseStorage: this.firebaseStorage,
