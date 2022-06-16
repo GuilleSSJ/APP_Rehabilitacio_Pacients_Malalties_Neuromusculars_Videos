@@ -57,6 +57,7 @@ class MyApp extends StatelessWidget {
         ),
         Provider<HomeProvider>(
           create: (_) => HomeProvider(
+            prefs: prefs,
             firebaseFirestore: this.firebaseFirestore,
           ),
         ),

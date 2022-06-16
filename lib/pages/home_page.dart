@@ -29,7 +29,8 @@ class HomePageState extends State<HomePage> {
   HomePageState({Key? key});
 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   final ScrollController listScrollController = ScrollController();
 
   int _limit = 20;
@@ -40,6 +41,7 @@ class HomePageState extends State<HomePage> {
   late AuthProvider authProvider;
   late String currentUserId;
   late HomeProvider homeProvider;
+  List<String> usersList = [];
   Debouncer searchDebouncer = Debouncer(milliseconds: 300);
   StreamController<bool> btnClearController = StreamController<bool>();
   TextEditingController searchBarTec = TextEditingController();
@@ -54,6 +56,7 @@ class HomePageState extends State<HomePage> {
     super.initState();
     authProvider = context.read<AuthProvider>();
     homeProvider = context.read<HomeProvider>();
+    usersList = homeProvider.getPrefStringList("llistaPacients")!;
 
     if (authProvider.getUserFirebaseId()?.isNotEmpty == true) {
       currentUserId = authProvider.getUserFirebaseId()!;
@@ -88,7 +91,8 @@ class HomePageState extends State<HomePage> {
     firebaseMessaging.getToken().then((token) {
       print('push token: $token');
       if (token != null) {
-        homeProvider.updateDataFirestore(FirestoreConstants.pathUserCollection, currentUserId, {'pushToken': token});
+        homeProvider.updateDataFirestore(FirestoreConstants.pathUserCollection,
+            currentUserId, {'pushToken': token});
       }
     }).catchError((err) {
       Fluttertoast.showToast(msg: err.message.toString());
@@ -96,15 +100,18 @@ class HomePageState extends State<HomePage> {
   }
 
   void configLocalNotification() {
-    AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings("@mipmap/ic_launcher");
-    IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
-    InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings("@mipmap/ic_launcher");
+    IOSInitializationSettings initializationSettingsIOS =
+        IOSInitializationSettings();
+    InitializationSettings initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
   void scrollListener() {
-    if (listScrollController.offset >= listScrollController.position.maxScrollExtent &&
+    if (listScrollController.offset >=
+            listScrollController.position.maxScrollExtent &&
         !listScrollController.position.outOfRange) {
       setState(() {
         _limit += _limitIncrement;
@@ -121,17 +128,22 @@ class HomePageState extends State<HomePage> {
   }
 
   void showNotification(RemoteNotification remoteNotification) async {
-    AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      Platform.isAndroid ? 'com.dfa.flutterchatdemo' : 'com.duytq.flutterchatdemo',
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      Platform.isAndroid
+          ? 'com.dfa.flutterchatdemo'
+          : 'com.duytq.flutterchatdemo',
       'Flutter chat demo',
       playSound: true,
       enableVibration: true,
       importance: Importance.max,
       priority: Priority.high,
     );
-    IOSNotificationDetails iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics, iOS: iOSPlatformChannelSpecifics);
+    IOSNotificationDetails iOSPlatformChannelSpecifics =
+        IOSNotificationDetails();
+    NotificationDetails platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics);
 
     print(remoteNotification);
 
@@ -155,7 +167,8 @@ class HomePageState extends State<HomePage> {
         builder: (BuildContext context) {
           return SimpleDialog(
             clipBehavior: Clip.hardEdge,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             contentPadding: EdgeInsets.zero,
             children: <Widget>[
               Container(
@@ -174,7 +187,10 @@ class HomePageState extends State<HomePage> {
                     ),
                     Text(
                       'Exit app',
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Are you sure to exit app?',
@@ -198,7 +214,9 @@ class HomePageState extends State<HomePage> {
                     ),
                     Text(
                       'Cancel',
-                      style: TextStyle(color: ColorConstants.primaryColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: ColorConstants.primaryColor,
+                          fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -218,7 +236,9 @@ class HomePageState extends State<HomePage> {
                     ),
                     Text(
                       'Yes',
-                      style: TextStyle(color: ColorConstants.primaryColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: ColorConstants.primaryColor,
+                          fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -245,15 +265,14 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         backgroundColor: Colors.orange,
+        backgroundColor: Colors.orange,
         centerTitle: true,
         title: Text(
           'Xat',
           style: TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
         ),
-        actions: <Widget>[buildPopupMenu()],
+        //actions: <Widget>[buildPopupMenu()],
       ),
-
       body: WillPopScope(
         child: Stack(
           children: <Widget>[
@@ -262,13 +281,19 @@ class HomePageState extends State<HomePage> {
               children: [
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
-                    stream: homeProvider.getStreamFireStore(FirestoreConstants.pathUserCollection, _limit, _textSearch),
-                    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    stream: homeProvider.getStreamFireStore(
+                        FirestoreConstants.pathUserCollection,
+                        _limit,
+                        _textSearch,
+                        usersList),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.hasData) {
                         if ((snapshot.data?.docs.length ?? 0) > 0) {
                           return ListView.builder(
                             padding: EdgeInsets.all(10),
-                            itemBuilder: (context, index) => buildItem(context, snapshot.data?.docs[index]),
+                            itemBuilder: (context, index) =>
+                                buildItem(context, snapshot.data?.docs[index]),
                             itemCount: snapshot.data?.docs.length,
                             controller: listScrollController,
                           );
@@ -330,7 +355,8 @@ class HomePageState extends State<HomePage> {
               },
               decoration: InputDecoration.collapsed(
                 hintText: 'Search nickname (you have to type exactly string)',
-                hintStyle: TextStyle(fontSize: 13, color: ColorConstants.greyColor),
+                hintStyle:
+                    TextStyle(fontSize: 13, color: ColorConstants.greyColor),
               ),
               style: TextStyle(fontSize: 13),
             ),
@@ -347,7 +373,8 @@ class HomePageState extends State<HomePage> {
                             _textSearch = "";
                           });
                         },
-                        child: Icon(Icons.clear_rounded, color: ColorConstants.greyColor, size: 20))
+                        child: Icon(Icons.clear_rounded,
+                            color: ColorConstants.greyColor, size: 20))
                     : SizedBox.shrink();
               }),
         ],
@@ -391,9 +418,8 @@ class HomePageState extends State<HomePage> {
   Widget buildItem(BuildContext context, DocumentSnapshot? document) {
     if (document != null) {
       NVRUser nvrUser = NVRUser.fromDocument(document);
-      if (nvrUser.id == currentUserId) {
-        return SizedBox.shrink();
-      } else {
+
+      if (nvrUser.id != currentUserId && usersList.contains(nvrUser.id)) {
         return Container(
           child: TextButton(
             child: Row(
@@ -428,11 +454,12 @@ class HomePageState extends State<HomePage> {
                             );
                           },
                         )
-                      : */Icon(
-                          Icons.account_circle,
-                          size: 50,
-                          color: ColorConstants.greyColor,
-                        ),
+                      : */
+                      Icon(
+                    Icons.account_circle,
+                    size: 50,
+                    color: ColorConstants.greyColor,
+                  ),
                   borderRadius: BorderRadius.all(Radius.circular(25)),
                   clipBehavior: Clip.hardEdge,
                 ),
@@ -444,7 +471,8 @@ class HomePageState extends State<HomePage> {
                           child: Text(
                             'Nom: ${nvrUser.nom}',
                             maxLines: 1,
-                            style: TextStyle(color: ColorConstants.primaryColor),
+                            style:
+                                TextStyle(color: ColorConstants.primaryColor),
                           ),
                           alignment: Alignment.centerLeft,
                           margin: EdgeInsets.fromLTRB(10, 0, 0, 5),
@@ -453,7 +481,8 @@ class HomePageState extends State<HomePage> {
                           child: Text(
                             "Cognoms: ${nvrUser.cognom1} ${nvrUser.cognom2}",
                             maxLines: 1,
-                            style: TextStyle(color: ColorConstants.primaryColor),
+                            style:
+                                TextStyle(color: ColorConstants.primaryColor),
                           ),
                           alignment: Alignment.centerLeft,
                           margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -484,7 +513,8 @@ class HomePageState extends State<HomePage> {
               );
             },
             style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(ColorConstants.greyColor2),
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(ColorConstants.greyColor2),
               shape: MaterialStateProperty.all<OutlinedBorder>(
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -494,6 +524,8 @@ class HomePageState extends State<HomePage> {
           ),
           margin: EdgeInsets.only(bottom: 10, left: 5, right: 5),
         );
+      } else {
+        return SizedBox.shrink();
       }
     } else {
       return SizedBox.shrink();

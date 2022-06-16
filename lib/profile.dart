@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import 'principal.dart';
 
-
 class Profile extends StatefulWidget {
   @override
   _ProfileState createState() => _ProfileState();
@@ -20,8 +19,14 @@ class _ProfileState extends State<Profile> {
   @override
   void initState() {
     authProvider = context.read<AuthProvider>();
-    _txtControllerNom = TextEditingController(text: authProvider.getUserFirebaseFullname());
-    _txtControllerTargRef = TextEditingController(text: 'Terapeuta1');
+    _txtControllerNom =
+        TextEditingController(text: authProvider.getUserFirebaseFullname());
+    _txtControllerTargRef = TextEditingController(
+        text: authProvider.getStringPref(FirestoreConstants.nomTerapeuta)! +
+            ' ' +
+            authProvider.getStringPref(FirestoreConstants.cognom1Terapeuta)! +
+            ' ' +
+            authProvider.getStringPref(FirestoreConstants.cognom2Terapeuta)!);
     _txtControllerTelef = TextEditingController(text: '935537099');
     super.initState();
   }
@@ -32,8 +37,6 @@ class _ProfileState extends State<Profile> {
     // widget tree.
     super.dispose();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -49,53 +52,54 @@ class _ProfileState extends State<Profile> {
       body: SingleChildScrollView(
         child: Form(
           child: Column(
-          children: <Widget>[
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 20),
-              child: TextField(
-                cursorColor: Colors.orange,
-                controller: _txtControllerNom,
-                readOnly: true,
-                decoration: InputDecoration(
+            children: <Widget>[
+              SizedBox(
+                height: 20,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 15.0, right: 15.0, top: 0, bottom: 20),
+                child: TextField(
+                  cursorColor: Colors.orange,
+                  controller: _txtControllerNom,
+                  readOnly: true,
+                  decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: "Nom d'usuari",
-                    ),
+                  ),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                  left: 15.0, right: 15.0, top: 15, bottom: 20),
-              //padding: EdgeInsets.symmetric(horizontal: 15),
-              child: TextField(
-                cursorColor: Colors.orange,
-                controller: _txtControllerTargRef,
-                readOnly: true,
-                decoration: InputDecoration(
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 15.0, right: 15.0, top: 15, bottom: 20),
+                //padding: EdgeInsets.symmetric(horizontal: 15),
+                child: TextField(
+                  cursorColor: Colors.orange,
+                  controller: _txtControllerTargRef,
+                  readOnly: true,
+                  decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Tarjeta de referència',
-                    ),
+                  ),
+                ),
               ),
-            ),
-             Padding(
-              padding: const EdgeInsets.only(
-                  left: 15.0, right: 15.0, top: 15, bottom: 20),
-              //padding: EdgeInsets.symmetric(horizontal: 15),
-              child: TextField(
-                controller: _txtControllerTelef,
-                readOnly: true,
-                decoration: InputDecoration(
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 15.0, right: 15.0, top: 15, bottom: 20),
+                //padding: EdgeInsets.symmetric(horizontal: 15),
+                child: TextField(
+                  controller: _txtControllerTelef,
+                  readOnly: true,
+                  decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Telèfon de contacte',
-                    ),
+                  ),
+                ),
               ),
-            ),
-            SizedBox(
-              height: 60,
-            ),
-            /*Container(
+              SizedBox(
+                height: 60,
+              ),
+              /*Container(
               height: 50,
               width: 250,
               decoration: BoxDecoration(
@@ -115,7 +119,7 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
             ),*/
-            /*SizedBox(
+              /*SizedBox(
               height: 110,
             ),
             FlatButton(
@@ -131,9 +135,9 @@ class _ProfileState extends State<Profile> {
                 style: TextStyle(color: Colors.orange, fontSize: 15),
               ),
             ),*/
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

@@ -19,9 +19,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/category.dart';
 import '../models/models.dart';
 import '../widgets/widgets.dart';
-
 
 class Categories extends StatefulWidget {
   const Categories({Key? key, this.patientId = ""}) : super(key: key);
@@ -32,7 +32,6 @@ class Categories extends StatefulWidget {
 }
 
 class _CategoriesState extends State<Categories> {
-
   int _limit = 20;
   int _limitIncrement = 20;
   String _textSearch = "";
@@ -43,13 +42,15 @@ class _CategoriesState extends State<Categories> {
   late String currentUserId;
   bool isAdmin = false;
   List<String> userVideos = [];
+  List<String> assignedPatientVideos = [];
   late NVRUser nvrUser;
+  Future<List<Category>> categories = Future.value([]);
 
   @override
   void initState() {
     videoProvider = context.read<CategoryProvider>();
     authProvider = context.read<AuthProvider>();
-     if (authProvider.getUserFirebaseId()?.isNotEmpty == true) {
+    if (authProvider.getUserFirebaseId()?.isNotEmpty == true) {
       currentUserId = authProvider.getUserFirebaseId()!;
     } else {
       Navigator.of(context).pushAndRemoveUntil(
@@ -57,176 +58,200 @@ class _CategoriesState extends State<Categories> {
         (Route<dynamic> route) => false,
       );
     }
-   getUser().then((value) {
-    setState(() {
-      nvrUser = value;
-      isAdmin = videoProvider.getBoolPref("isAdmin")!;
-      if (isAdmin) {
-      setUserVideos(widget.patientId);
-      } // Future is completed with a value.
+    isAdmin = videoProvider.getBoolPref("isAdmin")!;
+    if (!isAdmin) {
+      assignedPatientVideos = videoProvider.getPrefStringList(FirestoreConstants.llistaVideos)!;
+    }
+    getUserCategories();
+    getUser().then((value) {
+      setState(() {
+        nvrUser = value;
+        if (isAdmin) {
+          setUserVideos(widget.patientId);
+        } // Future is completed with a value.
+      });
     });
-  });
-  super.initState();
+    super.initState();
   }
 
-  void setUserVideos(String patientId){
-     videoProvider.getPatientAssignedVideos(patientId).then((value) {
-    setState(() {
-      userVideos = value;
+  getUserCategories() {
+    videoProvider.getCategoriesStreamFirestore().listen((event) async {
+      if (event.docs.isNotEmpty) {
+        setState(() {
+          categories = videoProvider.getCategories(event.docs);
+        });
+      }
     });
+    ;
+  }
+
+  void setUserVideos(String patientId) {
+    videoProvider.getPatientAssignedVideos(patientId).then((value) {
+      setState(() {
+        userVideos = value;
+      });
     });
   }
 
-  Future<NVRUser> getUser() async{
-    DocumentSnapshot userDoc= await authProvider.getUserDocument(currentUserId);
+  Future<NVRUser> getUser() async {
+    DocumentSnapshot userDoc =
+        await authProvider.getUserDocument(currentUserId);
     return NVRUser.fromDocument(userDoc);
   }
 
-Future<List<String>> getCategoryVideosFutureList(DocumentSnapshot? document) async{
+  Future<List<String>> getCategoryVideosFutureList(
+      DocumentSnapshot? document) async {
     return await document?.get(FirestoreConstants.videos).cast<String>();
   }
 
   List<String> getCategoryVideosList(DocumentSnapshot document) {
     List<String> videoList = [];
     getCategoryVideosFutureList(document).then((value) {
-    setState(() {
-      videoList = value; // Future is completed with a value.
+      setState(() {
+        videoList = value; // Future is completed with a value.
+      });
     });
-  });
-  return videoList;
+    return videoList;
   }
-  
-  
-  Widget buildItem(BuildContext context, DocumentSnapshot? document) {
-        if (document != null) {
-          return Container(
-            child: TextButton(
-              child: Row(
-                children: <Widget>[
-                  Material(
-                    child: Icon(
-                            Icons.task,
-                            size: 50,
-                            color:Colors.orange,
-                          ),
-                    borderRadius: BorderRadius.all(Radius.circular(25)),
-                    clipBehavior: Clip.hardEdge,
-                  ),
-                  Flexible(
-                    child: Container(
-                      child: Column(
-                        children: <Widget>[
-                          Container(
-                            child: Text(
-                              document.get('nom'),
-                              maxLines: 1,
-                              style: TextStyle(color: ColorConstants.primaryColor),
-                            ),
-                            alignment: Alignment.centerLeft,
-                            margin: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                          ),
-                        ],
-                      ),
-                      margin: EdgeInsets.only(left: 20),
-                    ),
-                  ),
-                ],
+
+ /* bool enableCategory(List<String> categoryVideos, List<String> userVideos) {
+    if (categoryVideos.isNotEmpty && categoryVideos.every((item) => userVideos.contains(item))) {
+    return true;
+  } else {
+    return false;
+  }
+  }*/
+
+  Widget buildItem(BuildContext context, Category category) {
+      return Container(
+        child: TextButton(
+          child: Row(
+            children: <Widget>[
+              Material(
+                child: Image.network(
+                  category.photoURL,
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(25)),
+                clipBehavior: Clip.hardEdge,
               ),
-              onPressed: () async {
-                List<String> categoryVideos = await document.get(FirestoreConstants.videos).cast<String>();
-                List<Video> videos = await videoProvider.getVideoList(nvrUser.videos, categoryVideos, FirestoreConstants.pathVideoCollection, isAdmin);
-                if (videos.isNotEmpty) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PlayPage(
-                      arguments: PlayPageArguments(
-                        videos: videos,
-                        userVideos: userVideos,
-                        categoryName: document.get('nom'),
-                        categoryVideos: categoryVideos
+              Flexible(
+                child: Container(
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        child: Text(
+                          category.nom,
+                          maxLines: 1,
+                          style: TextStyle(color: ColorConstants.primaryColor),
+                        ),
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.fromLTRB(10, 0, 0, 5),
                       ),
-                      patientId: widget.patientId,
-                    ),
+                    ],
                   ),
-                );
-              }
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(ColorConstants.greyColor2),
-                shape: MaterialStateProperty.all<OutlinedBorder>(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
+                  margin: EdgeInsets.only(left: 20),
                 ),
               ),
+            ],
+          ),
+          onPressed: () async {
+            List<Video> videos = await videoProvider.getVideoList(
+                nvrUser.videos,
+                category.llistaVideos,
+                FirestoreConstants.pathVideoCollection,
+                isAdmin);
+            if (videos.isNotEmpty) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PlayPage(
+                    arguments: PlayPageArguments(
+                        videos: videos,
+                        userVideos: userVideos,
+                        categoryName: category.nom,
+                        categoryVideos: category.llistaVideos),
+                    patientId: widget.patientId,
+                  ),
+                ),
+              );
+            }
+            else {
+              Fluttertoast.showToast(msg: "No tens activitats en aquesta categoria");
+            }
+          },
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(ColorConstants.greyColor2),
+            shape: MaterialStateProperty.all<OutlinedBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
             ),
-            margin: EdgeInsets.only(bottom: 10, left: 5, right: 5),
-          );
-      } else {
-      return SizedBox.shrink();
+          ),
+        ),
+        margin: EdgeInsets.only(bottom: 10, left: 5, right: 5),
+      );
     }
-
-      }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         backgroundColor: Colors.orange,
+        backgroundColor: Colors.orange,
         centerTitle: true,
         title: Text(
           'Categories',
           style: TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
         ),
       ),
-
       body: Stack(
-          children: <Widget>[
-            // List
-            Column(
-              children: [
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: videoProvider.getStreamFireStore(FirestoreConstants.pathCategoryCollection, _limit),
-                    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                      if (snapshot.hasData) {
-                        if ((snapshot.data?.docs.length ?? 0) > 0) {
-                          return ListView.builder(
-                            padding: EdgeInsets.all(10),
-                            itemBuilder: (context, index) => buildItem(context, snapshot.data?.docs[index]),
-                            itemCount: snapshot.data?.docs.length,
-                          );
-                        } else {
-                          return Center(
-                            child: Text("No hi ha categories"),
-                          );
-                        }
+        children: <Widget>[
+          // List
+          Column(
+            children: [
+              Expanded(
+                child: FutureBuilder<List<Category>>(
+                  future: categories,
+                  builder: (context, snapshots) {
+                    if (snapshots.hasData) {
+                      if ((snapshots.data?.length ?? 0) > 0) {
+                        return ListView.builder(
+                          padding: EdgeInsets.all(10),
+                          itemBuilder: (context, index) => buildItem(
+                              context, snapshots.data!.elementAt(index)),
+                          itemCount: snapshots.data?.length,
+                        );
                       } else {
                         return Center(
-                          child: CircularProgressIndicator(
-                            color: ColorConstants.themeColor,
-                          ),
+                          child: Text("No hi ha categories"),
                         );
                       }
-                    },
-                  ),
+                    } else {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: ColorConstants.themeColor,
+                        ),
+                      );
+                    }
+                  },
                 ),
-              ],
-            ),
-            // Loading
-            Positioned(
-              child: isLoading ? LoadingView() : SizedBox.shrink(),
-            )
-          ],
-        ),
-           floatingActionButton: isAdmin ? FloatingActionButton.extended(  
+              ),
+            ],
+          ),
+          // Loading
+          Positioned(
+            child: isLoading ? LoadingView() : SizedBox.shrink(),
+          )
+        ],
+      ),
+      /*floatingActionButton: isAdmin ? FloatingActionButton.extended(  
                   onPressed: () {},  
                   backgroundColor: Colors.orange,
                   icon: Icon(Icons.add),  
                   label: Text("Nova categoria"),  
-                ) : null
+                ) : null*/
     );
   }
-  }
+}

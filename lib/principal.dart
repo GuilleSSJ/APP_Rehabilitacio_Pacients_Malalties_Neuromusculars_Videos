@@ -1,6 +1,9 @@
+import 'dart:ffi';
+
 import 'package:app_video_rehabilitacio_neuromuscular/constants/firestore_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/conversationPage.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/nvr_user.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/chat_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/home_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/login_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/patients_list.page.dart';
@@ -11,11 +14,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/profile.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/play_page.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/models/clips.dart';
 import 'package:provider/provider.dart';
 //import 'package:firebase_core/firebase_core.dart';
-
-
 
 class PagePrincipal extends StatefulWidget {
   PagePrincipal();
@@ -27,9 +27,10 @@ class _PagePrincipalState extends State<PagePrincipal> {
   int selectedIndex = 0;
   late HomeProvider homeProvider;
   late AuthProvider authProvider;
-  late String currentUserId;
+  String currentUserId = "";
+  String teraphistId = "";
   late NVRUser nvrUser;
-  late final List<Widget> pantallas;
+  List<Widget> pantallas = [];
   bool isAdmin = false;
 
   void _onItemTapped(int index) {
@@ -38,43 +39,65 @@ class _PagePrincipalState extends State<PagePrincipal> {
     });
   }
 
-   @override
+  @override
   void initState() {
     authProvider = context.read<AuthProvider>();
     isAdmin = authProvider.getBoolPref("isAdmin")!;
-    pantallas = [
-    Categories(),
-    HomePage(),
-    Profile(),
-  ];
-
-   if (isAdmin) {
-     pantallas[0] = PatientsList();
-   }
-
+    if (!isAdmin) {
+      pantallas = [
+        Categories(),
+        ChatPage(
+          arguments: ChatPageArguments(
+              peerId:
+                  authProvider.getStringPref(FirestoreConstants.chattingWith)!,
+              peerNom:
+                  authProvider.getStringPref(FirestoreConstants.nomTerapeuta)!,
+              peerCognom1: authProvider
+                  .getStringPref(FirestoreConstants.cognom1Terapeuta)!,
+              peerCognom2: authProvider
+                  .getStringPref(FirestoreConstants.cognom2Terapeuta)!),
+        ),
+        Profile(),
+      ];
+    } else {
+      pantallas = [
+        PatientsList(),
+        HomePage(),
+      ];
+    }
     super.initState();
-  } 
-  
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: pantallas[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.video_collection_outlined),
-            label: 'Vídeos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_outlined),
-            label: 'Xat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Profile',
-          ),
-        
-        ],
+        items: isAdmin
+            ? const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.video_collection_outlined),
+                  label: 'Vídeos',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.chat_outlined),
+                  label: 'Xat',
+                ),
+              ]
+            : const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.video_collection_outlined),
+                  label: 'Vídeos',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.chat_outlined),
+                  label: 'Xat',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.account_circle),
+                  label: 'Profile',
+                ),
+              ],
         currentIndex: selectedIndex,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,

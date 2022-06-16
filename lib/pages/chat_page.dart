@@ -142,9 +142,11 @@ class ChatPageState extends State<ChatPage> {
     if (content.trim().isNotEmpty) {
       textEditingController.clear();
       chatProvider.sendMessage(content, type, groupChatId, currentUserId, widget.arguments.peerId);
+      if (listScrollController.hasClients) {
       listScrollController.animateTo(0, duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+      }
     } else {
-      Fluttertoast.showToast(msg: 'Nothing to send', backgroundColor: ColorConstants.greyColor);
+      Fluttertoast.showToast(msg: 'Res a enviar', backgroundColor: ColorConstants.greyColor);
     }
   }
 

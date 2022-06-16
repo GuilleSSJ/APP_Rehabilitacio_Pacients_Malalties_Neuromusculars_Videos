@@ -60,13 +60,13 @@ class LoginPageState extends State<LoginPage> {
     AuthProvider authProvider = Provider.of<AuthProvider>(context);
     switch (authProvider.status) {
       case Status.authenticateError:
-        Fluttertoast.showToast(msg: "Sign in fail");
+        Fluttertoast.showToast(msg: "Error en l'autenticació");
         break;
       case Status.authenticateCanceled:
-        Fluttertoast.showToast(msg: "Sign in canceled");
+        Fluttertoast.showToast(msg: "S'ha cancel·lat l'autenticació");
         break;
       case Status.authenticated:
-        Fluttertoast.showToast(msg: "Sign in success");
+        Fluttertoast.showToast(msg: "Has iniciat sessió amb èxit");
         break;
       default:
         break;

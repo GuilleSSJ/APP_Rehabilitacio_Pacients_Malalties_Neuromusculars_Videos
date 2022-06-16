@@ -1,20 +1,22 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:app_video_rehabilitacio_neuromuscular/constants/firestore_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
 import 'package:http/http.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/video.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/models/clips.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../providers/chat_provider.dart';
+
 class PlayPage extends StatefulWidget {
-  PlayPage({Key? key, required this.arguments, this.patientId = ""}) : super(key: key);
+  PlayPage({Key? key, required this.arguments, this.patientId = ""})
+      : super(key: key);
 
   final PlayPageArguments arguments;
   final String patientId;
@@ -24,20 +26,21 @@ class PlayPage extends StatefulWidget {
 }
 
 class _PlayPageState extends State<PlayPage> {
- VideoPlayerController? _controller;
- late CategoryProvider videoProvider;
- late bool isAdmin;
- late List<bool> assignedVideos;
+  VideoPlayerController? _controller;
+  late CategoryProvider videoProvider;
+  late ChatProvider chatProvider;
+  late bool isAdmin;
+  late List<bool> assignedVideos;
 
   List<Video> get _clips {
     return widget.arguments.videos;
   }
 
-   List<String> get _userVideos {
+  List<String> get _userVideos {
     return widget.arguments.userVideos;
   }
 
-    List<String> get _categoryVideos {
+  List<String> get _categoryVideos {
     return widget.arguments.categoryVideos;
   }
 
@@ -93,6 +96,7 @@ class _PlayPageState extends State<PlayPage> {
   @override
   void initState() {
     videoProvider = context.read<CategoryProvider>();
+    chatProvider = context.read<ChatProvider>();
     assignedVideos = List.filled(_categoryVideos.length, false);
     Wakelock.enable();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
@@ -128,7 +132,8 @@ class _PlayPageState extends State<PlayPage> {
   void _enterFullScreen() async {
     debugPrint("enterFullScreen");
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-    await SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+    await SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
     if (_disposed) return;
     setState(() {
       _isFullScreen = true;
@@ -150,8 +155,8 @@ class _PlayPageState extends State<PlayPage> {
     final clip = _clips[index];
 
     final controller = //clip.parent.startsWith("http")
-       VideoPlayerController.network(clip.url);
-        //: VideoPlayerController.asset(clip.videoPath());
+        VideoPlayerController.network(clip.url);
+    //: VideoPlayerController.asset(clip.videoPath());
 
     final old = _controller;
     _controller = controller;
@@ -203,12 +208,14 @@ class _PlayPageState extends State<PlayPage> {
     var position = await controller.position;
     _position = position;
     final playing = controller.value.isPlaying;
-    final isEndOfClip = position!.inMilliseconds > 0 && position.inSeconds + 1 >= duration.inSeconds;
+    final isEndOfClip = position!.inMilliseconds > 0 &&
+        position.inSeconds + 1 >= duration.inSeconds;
     if (playing) {
       // handle progress indicator
       if (_disposed) return;
       setState(() {
-        _progress = position.inMilliseconds.ceilToDouble() / duration.inMilliseconds.ceilToDouble();
+        _progress = position.inMilliseconds.ceilToDouble() /
+            duration.inMilliseconds.ceilToDouble();
       });
     }
 
@@ -216,12 +223,14 @@ class _PlayPageState extends State<PlayPage> {
     if (_isPlaying != playing || _isEndOfClip != isEndOfClip) {
       _isPlaying = playing;
       _isEndOfClip = isEndOfClip;
-      debugPrint("updated -----> isPlaying=$playing / isEndOfClip=$isEndOfClip");
+      debugPrint(
+          "updated -----> isPlaying=$playing / isEndOfClip=$isEndOfClip");
       if (isEndOfClip && !playing) {
-        debugPrint("========================== End of Clip / Handle NEXT ========================== ");
+        debugPrint(
+            "========================== End of Clip / Handle NEXT ========================== ");
         final isComplete = _playingIndex == _clips.length - 1;
         if (isComplete) {
-          print("played all!!");
+          print("reproduïts tots!!");
           if (!_showingDialog) {
             _showingDialog = true;
             _showPlayedAllDialog().then((value) {
@@ -242,7 +251,8 @@ class _PlayPageState extends State<PlayPage> {
         barrierDismissible: true,
         builder: (BuildContext context) {
           return AlertDialog(
-            content: SingleChildScrollView(child: Text("Played all videos.")),
+            content: SingleChildScrollView(
+                child: Text("S'han reproduït tots els vídeos.")),
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -256,35 +266,37 @@ class _PlayPageState extends State<PlayPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
-         backgroundColor: Colors.orange,
-        centerTitle: true,
-        title: Text(
-          widget.arguments.categoryName,
-          style: TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
+        appBar: AppBar(
+          backgroundColor: Colors.orange,
+          centerTitle: true,
+          title: Text(
+            widget.arguments.categoryName,
+            style:
+                TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
+          ),
         ),
-      ),
-      body: _isFullScreen
-          ? Container(
-              child: Center(child: _playView(context)),
-              decoration: BoxDecoration(color: Colors.black),
-            )
-          : Column(children: <Widget>[
-              Container(
+        body: _isFullScreen
+            ? Container(
                 child: Center(child: _playView(context)),
                 decoration: BoxDecoration(color: Colors.black),
-              ),
-              Expanded(
-                child: _listView(),
-              ),
-            ]),
-      floatingActionButton: isAdmin ? FloatingActionButton.extended(  
-            onPressed: () {},  
-            backgroundColor: Colors.orange,
-            icon: Icon(Icons.add),  
-            label: Text("Afegir vídeo"),  
-          ) : null
-    );
+              )
+            : Column(children: <Widget>[
+                Container(
+                  child: Center(child: _playView(context)),
+                  decoration: BoxDecoration(color: Colors.black),
+                ),
+                Expanded(
+                  child: _listView(),
+                ),
+              ]),
+        floatingActionButton: isAdmin
+            ? FloatingActionButton.extended(
+                onPressed: () {},
+                backgroundColor: Colors.orange,
+                icon: Icon(Icons.add),
+                label: Text("Afegir vídeo"),
+              )
+            : null);
   }
 
   void _onTapCard(int index) {
@@ -319,7 +331,10 @@ class _PlayPageState extends State<PlayPage> {
         child: Center(
             child: Text(
           "Preparant...",
-          style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 18.0),
+          style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.bold,
+              fontSize: 18.0),
         )),
       );
     }
@@ -433,7 +448,10 @@ class _PlayPageState extends State<PlayPage> {
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Container(
                 decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [
-                  BoxShadow(offset: const Offset(0.0, 0.0), blurRadius: 4.0, color: Color.fromARGB(50, 0, 0, 0)),
+                  BoxShadow(
+                      offset: const Offset(0.0, 0.0),
+                      blurRadius: 4.0,
+                      color: Color.fromARGB(50, 0, 0, 0)),
                 ]),
                 child: Icon(
                   noMute ? Icons.volume_up : Icons.volume_off,
@@ -527,111 +545,203 @@ class _PlayPageState extends State<PlayPage> {
       runtime = "${clip.runningTime % 60}''";
     }*/
     return Card(
-      child: Container(
-        padding: EdgeInsets.all(4),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(right: 8),
-              child: //clip.parent.startsWith("http")
-                   Image.network(clip.photoURL, width: 70, height: 50, fit: BoxFit.fill)
+        child: Container(
+          padding: EdgeInsets.all(4),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: //clip.parent.startsWith("http")
+                      Image.network(clip.photoURL,
+                          width: 70, height: 50, fit: BoxFit.fill)
                   //: Image.asset(clip.thumbPath(), width: 70, height: 50, fit: BoxFit.fill),
-            ),
-            Expanded(
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(clip.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Padding(
-                      //child: Text("$runtime", style: TextStyle(color: Colors.grey[500])),
-                      padding: EdgeInsets.only(top: 3),
-                    )
-                  ]),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: isAdmin ? 
-              ElevatedButton(
-                onPressed: () {
-                  setState(
-                    () {
-                     showAlertDialog(context, index, isAssigned);
-                     
-                    },
-                  );
-                },
-                child: !isAssigned ? Text('Assignar', style:TextStyle(color: Colors.white)) :
-                Icon(Icons.check, color: Colors.white,) ,
-                 style: ElevatedButton.styleFrom(
-                primary: Colors.orange,
-                )) :
-              Icon(
-                Icons.play_arrow,
+                  ),
+              Expanded(
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(clip.title,
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Padding(
+                        //child: Text("$runtime", style: TextStyle(color: Colors.grey[500])),
+                        padding: EdgeInsets.only(top: 3),
+                      )
+                    ]),
               ),
-  ),
-          ],
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: isAdmin
+                    ? ElevatedButton(
+                        onPressed: () {
+                          setState(
+                            () {
+                              showAssignAlertDialog(context, index, isAssigned);
+                            },
+                          );
+                        },
+                        child: !isAssigned
+                            ? Text('Assignar',
+                                style: TextStyle(color: Colors.white))
+                            : Icon(
+                                Icons.check,
+                                color: Colors.white,
+                              ),
+                        style: ElevatedButton.styleFrom(
+                          primary: Colors.orange,
+                        ))
+                    : IconButton(
+                        onPressed: () {
+                          setState(
+                            () {
+                              showInfoAlertDialog(context, index);
+                            },
+                          );
+                        },
+                        icon: Icon(
+                          Icons.info,
+                          color: Colors.black,
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
-      ),
-      color: playing ? Colors.blue : Colors.white
-    );
+        color: playing ? Colors.blue : Colors.white);
   }
 
-
-void checkAssignedVideos(List<String> userVideos, List<String> categoryVideos) {
+  void checkAssignedVideos(
+      List<String> userVideos, List<String> categoryVideos) {
     for (var i = 0; i < userVideos.length; i++) {
       int index = categoryVideos.indexOf(userVideos[i]);
       if (index >= 0) {
-      assignedVideos[index] = true;
+        assignedVideos[index] = true;
       }
+    }
   }
-}
 
-showAlertDialog(BuildContext context, int index, bool isAssigned) {
-  // set up the buttons
-  Widget cancelButton = FlatButton(
-    child: Text("Cancel·lar"),
-    onPressed:  () {
-      Navigator.of(context).pop();
-    },
-  );
-  Widget continueButton = FlatButton(
-    child: Text("OK"),
-    onPressed:  () {
-      String categoryVideoId = _categoryVideos[index];
-      if (!isAssigned && !_userVideos.contains(categoryVideoId)) {
-      _userVideos.add(categoryVideoId);
-      }
-      else {
-        _userVideos.remove(categoryVideoId);
-      }
-      assignedVideos[index] = !isAssigned;
-      isAssigned = assignedVideos[index];
-      videoProvider.updateActivitiesList(widget.patientId, _userVideos);
-       Navigator.of(context).pop();
-    },
-  );
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    title: Text("Alerta de confirmació"),
-    content: assignedVideos[index] ? Text("Segur que vols treure l'activitat al pacient?") : Text("Segur que vols assignar l'activitat al pacient?"),
-    actions: [
-      cancelButton,
-      continueButton,
-    ],
-  );
-  // show the dialog
+  void sendCompletedMessage(int index) {
+    Video video = _clips[index];
+    String currentUserId = videoProvider.getPref(FirestoreConstants.id)!;
+    String peerId = videoProvider.getPref(FirestoreConstants.chattingWith)!;
+    String groupChatId = '$currentUserId-$peerId';
+    String content = videoProvider.getPref(FirestoreConstants.nom)! +
+        " ha completat l'activitat " +
+        "'" +
+        video.title +
+        "'" +
+        " de la cetegoria " +
+        "'" +
+        widget.arguments.categoryName +
+        "'.";
+    chatProvider.sendMessage(
+        content, TypeMessage.text, groupChatId, currentUserId, peerId);
+  }
 
-showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
+  void sendHelpMessage(int index) {
+    Video video = _clips[index];
+    String currentUserId = videoProvider.getPref(FirestoreConstants.id)!;
+    String peerId = videoProvider.getPref(FirestoreConstants.chattingWith)!;
+    String groupChatId = '$currentUserId-$peerId';
+    String content = videoProvider.getPref(FirestoreConstants.nom)! +
+        " necessita ajuda per fer l'activitat " +
+        "'" +
+        video.title +
+        "'" +
+        " de la cetegoria " +
+        "'" +
+        widget.arguments.categoryName +
+        "'.";
+    chatProvider.sendMessage(
+        content, TypeMessage.text, groupChatId, currentUserId, peerId);
+  }
+
+  showAssignAlertDialog(BuildContext context, int index, bool isAssigned) {
+    // set up the buttons
+    Widget cancelButton = FlatButton(
+      child: Text("Cancel·lar"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    Widget continueButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () {
+        String categoryVideoId = _categoryVideos[index];
+        if (!isAssigned && !_userVideos.contains(categoryVideoId)) {
+          _userVideos.add(categoryVideoId);
+        } else {
+          _userVideos.remove(categoryVideoId);
+        }
+        assignedVideos[index] = !isAssigned;
+        isAssigned = assignedVideos[index];
+        videoProvider.updateActivitiesList(widget.patientId, _userVideos);
+        Navigator.of(context).pop();
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Alerta de confirmació"),
+      content: assignedVideos[index]
+          ? Text("Segur que vols treure l'activitat al pacient?")
+          : Text("Segur que vols assignar l'activitat al pacient?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+    // show the dialog
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  showInfoAlertDialog(BuildContext context, int index) {
+    // set up the buttons
+    Widget cancelButton = FlatButton(
+      child: Text("Cancel·lar"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    Widget completedButton = FlatButton(
+      child: Text("Completar"),
+      onPressed: () {
+        sendCompletedMessage(index);
+        Navigator.of(context).pop();
+      },
+    );
+    Widget helpButton = FlatButton(
+      child: Text("Demanar Ajuda"),
+      onPressed: () {
+        sendHelpMessage(index);
+        Navigator.of(context).pop();
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Què vols fer amb l'activitat?"),
+      content: Text(
+          "Si has finalitzat l'activitat sense cap prblema, prem el botó 'Completar'. Si pel contrari tens problemes per dur-la a terme, prem el botó 'Demanar Ajuda'."),
+      actions: [cancelButton, helpButton, completedButton],
+    );
+    // show the dialog
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 }
 
 class PlayPageArguments {
@@ -640,5 +750,9 @@ class PlayPageArguments {
   final String categoryName;
   final List<String> categoryVideos;
 
-  PlayPageArguments({required this.videos, required this.userVideos, required this.categoryName, required this.categoryVideos});
+  PlayPageArguments(
+      {required this.videos,
+      required this.userVideos,
+      required this.categoryName,
+      required this.categoryVideos});
 }

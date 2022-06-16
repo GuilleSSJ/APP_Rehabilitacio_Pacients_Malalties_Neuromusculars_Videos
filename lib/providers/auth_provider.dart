@@ -37,89 +37,30 @@ class AuthProvider extends ChangeNotifier {
     return prefs.getString(FirestoreConstants.nom);
   }
 
-    String? getUserFirebaseTherapist() {
-    return prefs.getString(FirestoreConstants.chattingWith);
-  }
-
-     bool? getBoolPref(String key) {
+  bool? getBoolPref(String key) {
     return prefs.getBool(key);
   }
 
-   bool isLoggedIn()  {
+  String? getStringPref(String key) {
+    return prefs.getString(key);
+  }
+
+  String? getUserFirebaseTherapist() {
+    return prefs.getString(FirestoreConstants.chattingWith);
+  }
+
+  bool isLoggedIn() {
     if (FirebaseAuth.instance.currentUser?.uid != null) {
-        return true;
+      return true;
     } else {
-        return false;
-    }
-   }
-
-  /*Future<bool> handleSignIn(email, password) async {
-    _status = Status.authenticating;
-    notifyListeners();
-
-    GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-    if (googleUser != null) {
-      GoogleSignInAuthentication? googleAuth = await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      User? firebaseUser = (await firebaseAuth.signInWithCredential(credential)).user;
-
-      if (firebaseUser != null) {
-        final QuerySnapshot result = await firebaseFirestore
-            .collection(FirestoreConstants.pathUserCollection)
-            .where(FirestoreConstants.id, isEqualTo: firebaseUser.uid)
-            .get();
-        final List<DocumentSnapshot> documents = result.docs;
-        if (documents.length == 0) {
-          // Writing data to server because here is a new user
-          firebaseFirestore.collection(FirestoreConstants.pathUserCollection).doc(firebaseUser.uid).set({
-            FirestoreConstants.id: firebaseUser.uid,
-            FirestoreConstants.nom: firebaseUser.displayName,
-            FirestoreConstants.cognom1: documents[0].get("cognom1"),
-            FirestoreConstants.cognom2: documents[0].get("cognom2"),
-            'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
-            FirestoreConstants.chattingWith: null
-          });
-
-          // Write data to local storage
-          User? currentUser = firebaseUser;
-          await prefs.setString(FirestoreConstants.id, currentUser.uid);
-          await prefs.setString(FirestoreConstants.nom, currentUser.displayName ?? "");
-        } else {
-          // Already sign up, just get data from firestore
-          DocumentSnapshot documentSnapshot = documents[0];
-          UserChat userChat = UserChat.fromDocument(documentSnapshot);
-          // Write data to local
-          await prefs.setString(FirestoreConstants.id, userChat.id);
-          await prefs.setString(FirestoreConstants.nom, userChat.nom);
-          await prefs.setString(FirestoreConstants.cognom1, documentSnapshot.get("cognom1"));
-          await prefs.setString(FirestoreConstants.cognom1, documentSnapshot.get("cognom2"));
-        }
-        _status = Status.authenticated;
-        notifyListeners();
-        return true;
-      } else {
-        _status = Status.authenticateError;
-        notifyListeners();
-        return false;
-      }
-    } else {
-      _status = Status.authenticateCanceled;
-      notifyListeners();
       return false;
     }
-  }*/
+  }
 
   Future<void> handleSignOut() async {
     _status = Status.uninitialized;
     await firebaseAuth.signOut();
   }
-
-
-
 
   Future<bool> handleSignIn(email, password) async {
     UserCredential? userCredential;
@@ -127,19 +68,16 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-        userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password
-    );
+      userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         print('No user found for that email.');
       } else if (e.code == 'wrong-password') {
         print('Wrong password provided for that user.');
       }
-    }     
+    }
     if (userCredential != null) {
-  
       User? firebaseUser = userCredential.user;
 
       if (firebaseUser != null) {
@@ -150,7 +88,10 @@ class AuthProvider extends ChangeNotifier {
         final List<DocumentSnapshot> documents = result.docs;
         if (documents.length == 0) {
           // Writing data to server because here is a new user
-          firebaseFirestore.collection(FirestoreConstants.pathUserCollection).doc(firebaseUser.uid).set({
+          firebaseFirestore
+              .collection(FirestoreConstants.pathUserCollection)
+              .doc(firebaseUser.uid)
+              .set({
             FirestoreConstants.id: firebaseUser.uid,
             FirestoreConstants.nom: documents[0].get("nom"),
             FirestoreConstants.cognom1: documents[0].get("cognom1"),
@@ -162,7 +103,8 @@ class AuthProvider extends ChangeNotifier {
           // Write data to local storage
           User? currentUser = firebaseUser;
           await prefs.setString(FirestoreConstants.id, currentUser.uid);
-          await prefs.setString(FirestoreConstants.nom, documents[0].get("nom") ?? "");
+          await prefs.setString(
+              FirestoreConstants.nom, documents[0].get("nom") ?? "");
         } else {
           // Already sign up, just get data from firestore
           DocumentSnapshot documentSnapshot = documents[0];
@@ -170,18 +112,40 @@ class AuthProvider extends ChangeNotifier {
           // Write data to local
           await prefs.setString(FirestoreConstants.id, userChat.id);
           await prefs.setString(FirestoreConstants.nom, userChat.nom);
-          await prefs.setString(FirestoreConstants.cognom1, documentSnapshot.get("cognom1"));
-          await prefs.setString(FirestoreConstants.cognom1, documentSnapshot.get("cognom2"));
-          await prefs.setString(FirestoreConstants.chattingWith, documentSnapshot.get("chattingWith"));
+          await prefs.setString(
+              FirestoreConstants.cognom1, documentSnapshot.get("cognom1"));
+          await prefs.setString(
+              FirestoreConstants.cognom2, documentSnapshot.get("cognom2"));
+          await prefs.setString(FirestoreConstants.chattingWith,
+              documentSnapshot.get("chattingWith"));
           bool isAdmin = await documentSnapshot.get("isAdmin");
           await prefs.setBool(FirestoreConstants.isAdmin, isAdmin);
           if (!isAdmin) {
-          await prefs.setStringList(FirestoreConstants.videos, documentSnapshot.get("llistaVideos").cast<String>());
-          await prefs.setString(FirestoreConstants.nhc, documentSnapshot.get("nhc"));
-          await prefs.setInt(FirestoreConstants.edat, documentSnapshot.get("edat"));
-          }
-          else {
-          await prefs.setStringList(FirestoreConstants.llistaPacients, documentSnapshot.get("llistaPacients").cast<String>());
+            await prefs.setStringList(FirestoreConstants.videos,
+                documentSnapshot.get("llistaVideos").cast<String>());
+            await prefs.setString(
+                FirestoreConstants.nhc, documentSnapshot.get("nhc"));
+            await prefs.setInt(
+                FirestoreConstants.edat, documentSnapshot.get("edat"));
+
+            final QuerySnapshot result2 = await firebaseFirestore
+                .collection(FirestoreConstants.pathUserCollection)
+                .where(FirestoreConstants.id,
+                    isEqualTo: documentSnapshot.get("chattingWith"))
+                .get();
+            final DocumentSnapshot therapistDoc = result2.docs[0];
+
+            if (therapistDoc.exists) {
+              await prefs.setString(
+                  FirestoreConstants.nomTerapeuta, therapistDoc.get("nom"));
+              await prefs.setString(FirestoreConstants.cognom1Terapeuta,
+                  therapistDoc.get("cognom1"));
+              await prefs.setString(FirestoreConstants.cognom2Terapeuta,
+                  therapistDoc.get("cognom2"));
+            }
+          } else {
+            await prefs.setStringList(FirestoreConstants.llistaPacients,
+                documentSnapshot.get("llistaPacients").cast<String>());
           }
         }
         _status = Status.authenticated;
@@ -201,11 +165,9 @@ class AuthProvider extends ChangeNotifier {
 
   Future<DocumentSnapshot> getUserDocument(String currentUserId) async {
     final QuerySnapshot result = await firebaseFirestore
-            .collection(FirestoreConstants.pathUserCollection)
-            .where(FirestoreConstants.id, isEqualTo: currentUserId)
-            .get();
+        .collection(FirestoreConstants.pathUserCollection)
+        .where(FirestoreConstants.id, isEqualTo: currentUserId)
+        .get();
     return result.docs[0];
-
   }
-  
 }

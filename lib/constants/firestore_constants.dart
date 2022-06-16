@@ -23,4 +23,8 @@ class FirestoreConstants {
   static const photoURL = "urlFoto";
   static const isAdmin = "isAdmin";
   static const llistaPacients = "llistaPacients";
+  static const llistaVideos = "llistaVideos";
+  static const nomTerapeuta = "nomTerapeuta";
+  static const cognom1Terapeuta = "cognom1Terapeuta";
+  static const cognom2Terapeuta = "cognom2Terapeuta";
 }
