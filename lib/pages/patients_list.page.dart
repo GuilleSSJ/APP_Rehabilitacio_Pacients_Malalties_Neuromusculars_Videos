@@ -1,4 +1,5 @@
 import 'package:app_video_rehabilitacio_neuromuscular/pages/manage_videos_page.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/sign_up_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/patients_list_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -97,7 +98,7 @@ class _PatientsListState extends State<PatientsList> {
             title: Text(nvrUser.getName(),
                 style: const TextStyle(fontSize: 16, color: Colors.white)),
             subtitle: Text(
-              '${nvrUser.getAge().toString()} anys',
+              nvrUser.getAge() + ' anys',
               style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
             onTap: () async {
@@ -175,6 +176,18 @@ class _PatientsListState extends State<PatientsList> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => SignUpScreen()),
+            );
+          },
+          backgroundColor: Colors.orange,
+          icon: Icon(Icons.add),
+          label: Text("Registrar Pacient"),
+        )
     );
   }
 }

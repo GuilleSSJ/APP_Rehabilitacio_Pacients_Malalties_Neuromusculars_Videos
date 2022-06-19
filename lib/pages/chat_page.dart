@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:ui';
+import 'package:app_video_rehabilitacio_neuromuscular/providers/chat_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -7,10 +10,15 @@ import 'package:app_video_rehabilitacio_neuromuscular/constants/color_constants.
 import 'package:app_video_rehabilitacio_neuromuscular/constants/constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/models.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/providers.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 import '../widgets/widgets.dart';
 import 'pages.dart';
 
@@ -31,17 +39,22 @@ class ChatPageState extends State<ChatPage> {
   int _limitIncrement = 20;
   String groupChatId = "";
 
-  File? imageFile;
+  File? file;
+  PlatformFile? pickedFile;
   bool isLoading = false;
   bool isShowSticker = false;
-  String imageUrl = "";
+  String fileUrl = "";
 
   final TextEditingController textEditingController = TextEditingController();
   final ScrollController listScrollController = ScrollController();
   final FocusNode focusNode = FocusNode();
+  late final VideoPlayerController videoPlayerController;
+  late Future<void> _initializeVideoPlayerFuture;
 
   late ChatProvider chatProvider;
   late AuthProvider authProvider;
+
+  final ReceivePort _port = ReceivePort();
 
   @override
   void initState() {
@@ -49,13 +62,36 @@ class ChatPageState extends State<ChatPage> {
     chatProvider = context.read<ChatProvider>();
     authProvider = context.read<AuthProvider>();
 
+    IsolateNameServer.registerPortWithName(
+        _port.sendPort, 'downloader_send_port');
+    _port.listen((dynamic data) {
+      String id = data[0];
+      DownloadTaskStatus status = data[1];
+      int progress = data[2];
+      setState(() {});
+    });
+
     focusNode.addListener(onFocusChange);
     listScrollController.addListener(_scrollListener);
     readLocal();
   }
 
+  @override
+  void dispose() {
+    IsolateNameServer.removePortNameMapping('downloader_send_port');
+    super.dispose();
+  }
+
+  static void downloadCallback(
+      String id, DownloadTaskStatus status, int progress) {
+    final SendPort send =
+        IsolateNameServer.lookupPortByName('downloader_send_port')!;
+    send.send([id, status, progress]);
+  }
+
   _scrollListener() {
-    if (listScrollController.offset >= listScrollController.position.maxScrollExtent &&
+    if (listScrollController.offset >=
+            listScrollController.position.maxScrollExtent &&
         !listScrollController.position.outOfRange &&
         _limit <= listMessage.length) {
       setState(() {
@@ -102,12 +138,28 @@ class ChatPageState extends State<ChatPage> {
 
     pickedFile = await imagePicker.getImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      imageFile = File(pickedFile.path);
-      if (imageFile != null) {
+      file = File(pickedFile.path);
+      if (file != null) {
         setState(() {
           isLoading = true;
         });
-        uploadFile();
+        uploadFile(TypeMessage.image);
+      }
+    }
+  }
+
+  Future getVideo() async {
+    ImagePicker imagePicker = ImagePicker();
+    PickedFile? pickedFile;
+
+    pickedFile = await imagePicker.getVideo(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      file = File(pickedFile.path);
+      if (file != null) {
+        setState(() {
+          isLoading = true;
+        });
+        uploadFile(TypeMessage.video);
       }
     }
   }
@@ -120,15 +172,15 @@ class ChatPageState extends State<ChatPage> {
     });
   }
 
-  Future uploadFile() async {
+  Future uploadFile(int type) async {
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-    UploadTask uploadTask = chatProvider.uploadFile(imageFile!, fileName);
+    UploadTask uploadTask = chatProvider.uploadFile(file!, fileName);
     try {
       TaskSnapshot snapshot = await uploadTask;
-      imageUrl = await snapshot.ref.getDownloadURL();
+      fileUrl = await snapshot.ref.getDownloadURL();
       setState(() {
         isLoading = false;
-        onSendMessage(imageUrl, TypeMessage.image);
+        onSendMessage(fileUrl, type);
       });
     } on FirebaseException catch (e) {
       setState(() {
@@ -141,12 +193,15 @@ class ChatPageState extends State<ChatPage> {
   void onSendMessage(String content, int type) {
     if (content.trim().isNotEmpty) {
       textEditingController.clear();
-      chatProvider.sendMessage(content, type, groupChatId, currentUserId, widget.arguments.peerId);
+      chatProvider.sendMessage(
+          content, type, groupChatId, currentUserId, widget.arguments.peerId);
       if (listScrollController.hasClients) {
-      listScrollController.animateTo(0, duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+        listScrollController.animateTo(0,
+            duration: Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     } else {
-      Fluttertoast.showToast(msg: 'Res a enviar', backgroundColor: ColorConstants.greyColor);
+      Fluttertoast.showToast(
+          msg: 'Res a enviar', backgroundColor: ColorConstants.greyColor);
     }
   }
 
@@ -166,8 +221,11 @@ class ChatPageState extends State<ChatPage> {
                     ),
                     padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
                     width: 200,
-                    decoration: BoxDecoration(color: ColorConstants.greyColor2, borderRadius: BorderRadius.circular(8)),
-                    margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 20 : 10, right: 10),
+                    decoration: BoxDecoration(
+                        color: ColorConstants.greyColor2,
+                        borderRadius: BorderRadius.circular(8)),
+                    margin: EdgeInsets.only(
+                        bottom: isLastMessageRight(index) ? 20 : 10, right: 10),
                   )
                 : messageChat.type == TypeMessage.image
                     // Image
@@ -176,7 +234,9 @@ class ChatPageState extends State<ChatPage> {
                           child: Material(
                             child: Image.network(
                               messageChat.content,
-                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                              loadingBuilder: (BuildContext context,
+                                  Widget child,
+                                  ImageChunkEvent? loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Container(
                                   decoration: BoxDecoration(
@@ -190,9 +250,14 @@ class ChatPageState extends State<ChatPage> {
                                   child: Center(
                                     child: CircularProgressIndicator(
                                       color: ColorConstants.themeColor,
-                                      value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                          : null,
+                                      value:
+                                          loadingProgress.expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  loadingProgress
+                                                      .expectedTotalBytes!
+                                              : null,
                                     ),
                                   ),
                                 );
@@ -219,29 +284,80 @@ class ChatPageState extends State<ChatPage> {
                             clipBehavior: Clip.hardEdge,
                           ),
                           onPressed: () {
-                            /*Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FullPhotoPage(
-                                  url: messageChat.content,
-                                ),
-                              ),
-                            );*/
+                            downloadFile(messageChat.content);
                           },
-                          style: ButtonStyle(padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.all(0))),
+                          style: ButtonStyle(
+                              padding: MaterialStateProperty.all<EdgeInsets>(
+                                  EdgeInsets.all(0))),
                         ),
-                        margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 20 : 10, right: 10),
+                        margin: EdgeInsets.only(
+                            bottom: isLastMessageRight(index) ? 20 : 10,
+                            right: 10),
                       )
-                    // Sticker
-                    : Container(
-                        child: Image.asset(
-                          'images/${messageChat.content}.gif',
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                        ),
-                        margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 20 : 10, right: 10),
-                      ),
+                    : messageChat.type == TypeMessage.video
+                        // Video
+                        ? Container(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: <Widget>[
+                                  Stack(
+                                    alignment: AlignmentDirectional.center,
+                                    children: <Widget>[
+                                      Container(
+                                        width: 200,
+                                        color: ColorConstants.greyColor2,
+                                        height: 80,
+                                      ),
+                                      Column(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.video_call,
+                                            color: ColorConstants.primaryColor,
+                                          ),
+                                          SizedBox(
+                                            height: 5,
+                                          ),
+                                          Text(
+                                            'Vídeo',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: ColorConstants
+                                                    .primaryColor),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                      height: 40,
+                                      width: 200,
+                                      child: IconButton(
+                                        icon: Icon(Icons.file_download,
+                                            color: Colors.white),
+                                        onPressed: () =>
+                                            downloadFile(messageChat.content),
+                                      ),
+                                      color: Colors.blue)
+                                ],
+                              ),
+                            ),
+                            margin: EdgeInsets.only(bottom: 10, right: 10),
+                          )
+                        // Sticker
+                        : Container(
+                            child: Image.asset(
+                              'images/${messageChat.content}.gif',
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
+                            margin: EdgeInsets.only(
+                                bottom: isLastMessageRight(index) ? 20 : 10,
+                                right: 10),
+                          ),
           ],
           mainAxisAlignment: MainAxisAlignment.end,
         );
@@ -254,16 +370,18 @@ class ChatPageState extends State<ChatPage> {
                 children: <Widget>[
                   isLastMessageLeft(index)
                       ? Material(
-                          child:
-                            Image.network(
-                            widget.arguments.peerCognom1,
-                            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                          child: Image.network(
+                            widget.arguments.peerCognoms,
+                            loadingBuilder: (BuildContext context, Widget child,
+                                ImageChunkEvent? loadingProgress) {
                               if (loadingProgress == null) return child;
                               return Center(
                                 child: CircularProgressIndicator(
                                   color: ColorConstants.themeColor,
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
                                       : null,
                                 ),
                               );
@@ -293,8 +411,9 @@ class ChatPageState extends State<ChatPage> {
                           ),
                           padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
                           width: 200,
-                          decoration:
-                              BoxDecoration(color: ColorConstants.primaryColor, borderRadius: BorderRadius.circular(8)),
+                          decoration: BoxDecoration(
+                              color: ColorConstants.primaryColor,
+                              borderRadius: BorderRadius.circular(8)),
                           margin: EdgeInsets.only(left: 10),
                         )
                       : messageChat.type == TypeMessage.image
@@ -303,8 +422,9 @@ class ChatPageState extends State<ChatPage> {
                                 child: Material(
                                   child: Image.network(
                                     messageChat.content,
-                                    loadingBuilder:
-                                        (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                    loadingBuilder: (BuildContext context,
+                                        Widget child,
+                                        ImageChunkEvent? loadingProgress) {
                                       if (loadingProgress == null) return child;
                                       return Container(
                                         decoration: BoxDecoration(
@@ -318,15 +438,21 @@ class ChatPageState extends State<ChatPage> {
                                         child: Center(
                                           child: CircularProgressIndicator(
                                             color: ColorConstants.themeColor,
-                                            value: loadingProgress.expectedTotalBytes != null
-                                                ? loadingProgress.cumulativeBytesLoaded /
-                                                    loadingProgress.expectedTotalBytes!
+                                            value: loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
                                                 : null,
                                           ),
                                         ),
                                       );
                                     },
-                                    errorBuilder: (context, object, stackTrace) => Material(
+                                    errorBuilder:
+                                        (context, object, stackTrace) =>
+                                            Material(
                                       child: Image.asset(
                                         'images/img_not_available.jpeg',
                                         width: 200,
@@ -342,30 +468,86 @@ class ChatPageState extends State<ChatPage> {
                                     height: 200,
                                     fit: BoxFit.cover,
                                   ),
-                                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8)),
                                   clipBehavior: Clip.hardEdge,
                                 ),
                                 onPressed: () {
-                                  /*Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => FullPhotoPage(url: messageChat.content),
-                                    ),
-                                  );*/
+                                  downloadFile(messageChat.content);
                                 },
-                                style: ButtonStyle(padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.all(0))),
+                                style: ButtonStyle(
+                                    padding:
+                                        MaterialStateProperty.all<EdgeInsets>(
+                                            EdgeInsets.all(0))),
                               ),
                               margin: EdgeInsets.only(left: 10),
                             )
-                          : Container(
-                              child: Image.asset(
-                                'images/${messageChat.content}.gif',
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
-                              margin: EdgeInsets.only(bottom: isLastMessageRight(index) ? 20 : 10, right: 10),
-                            ),
+                          : messageChat.type == TypeMessage.video
+                              // Video
+                              ? Container(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: <Widget>[
+                                        Stack(
+                                          alignment:
+                                              AlignmentDirectional.center,
+                                          children: <Widget>[
+                                            Container(
+                                              width: 200,
+                                              color: Colors.grey,
+                                              height: 80,
+                                            ),
+                                            Column(
+                                              children: <Widget>[
+                                                Icon(
+                                                  Icons.video_call,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(
+                                                  height: 5,
+                                                ),
+                                                Text(
+                                                  'Vídeo',
+                                                  style: TextStyle(
+                                                      fontSize: 20,
+                                                      color: ColorConstants
+                                                          .primaryColor),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        Container(
+                                            height: 40,
+                                            width: 200,
+                                            color: Colors.blue,
+                                            child: IconButton(
+                                                icon: Icon(
+                                                  Icons.file_download,
+                                                ),
+                                                onPressed: () => downloadFile(
+                                                    messageChat.content),
+                                                color: Colors.white))
+                                      ],
+                                    ),
+                                  ),
+                                  margin: EdgeInsets.only(bottom: 10, left: 10),
+                                )
+                              : Container(
+                                  child: Image.asset(
+                                    'images/${messageChat.content}.gif',
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  margin: EdgeInsets.only(
+                                      bottom:
+                                          isLastMessageRight(index) ? 20 : 10,
+                                      right: 10),
+                                ),
                 ],
               ),
 
@@ -373,9 +555,13 @@ class ChatPageState extends State<ChatPage> {
               isLastMessageLeft(index)
                   ? Container(
                       child: Text(
-                        DateFormat('dd MMM kk:mm')
-                            .format(DateTime.fromMillisecondsSinceEpoch(int.parse(messageChat.timestamp))),
-                        style: TextStyle(color: ColorConstants.greyColor, fontSize: 12, fontStyle: FontStyle.italic),
+                        DateFormat('dd MMM kk:mm').format(
+                            DateTime.fromMillisecondsSinceEpoch(
+                                int.parse(messageChat.timestamp))),
+                        style: TextStyle(
+                            color: ColorConstants.greyColor,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic),
                       ),
                       margin: EdgeInsets.only(left: 50, top: 5, bottom: 5),
                     )
@@ -392,7 +578,10 @@ class ChatPageState extends State<ChatPage> {
   }
 
   bool isLastMessageLeft(int index) {
-    if ((index > 0 && listMessage[index - 1].get(FirestoreConstants.idFrom) == currentUserId) || index == 0) {
+    if ((index > 0 &&
+            listMessage[index - 1].get(FirestoreConstants.idFrom) ==
+                currentUserId) ||
+        index == 0) {
       return true;
     } else {
       return false;
@@ -400,7 +589,10 @@ class ChatPageState extends State<ChatPage> {
   }
 
   bool isLastMessageRight(int index) {
-    if ((index > 0 && listMessage[index - 1].get(FirestoreConstants.idFrom) != currentUserId) || index == 0) {
+    if ((index > 0 &&
+            listMessage[index - 1].get(FirestoreConstants.idFrom) !=
+                currentUserId) ||
+        index == 0) {
       return true;
     } else {
       return false;
@@ -423,7 +615,7 @@ class ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         backgroundColor: Colors.orange,
+        backgroundColor: Colors.orange,
         centerTitle: true,
         title: Text(
           this.widget.arguments.peerNom,
@@ -439,7 +631,7 @@ class ChatPageState extends State<ChatPage> {
                 buildListMessage(),
 
                 // Sticker
-                isShowSticker ? buildSticker() : SizedBox.shrink(),
+                //isShowSticker ? buildSticker() : SizedBox.shrink(),
 
                 // Input content
                 buildInput(),
@@ -455,7 +647,7 @@ class ChatPageState extends State<ChatPage> {
     );
   }
 
-  Widget buildSticker() {
+  /*Widget buildSticker() {
     return Expanded(
       child: Container(
         child: Column(
@@ -496,12 +688,14 @@ class ChatPageState extends State<ChatPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         ),
         decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: ColorConstants.greyColor2, width: 0.5)), color: Colors.white),
+            border: Border(
+                top: BorderSide(color: ColorConstants.greyColor2, width: 0.5)),
+            color: Colors.white),
         padding: EdgeInsets.all(5),
         height: 180,
       ),
     );
-  }
+  }*/
 
   Widget buildLoading() {
     return Positioned(
@@ -529,13 +723,24 @@ class ChatPageState extends State<ChatPage> {
             child: Container(
               margin: EdgeInsets.symmetric(horizontal: 1),
               child: IconButton(
+                icon: Icon(Icons.video_call),
+                onPressed: getVideo,
+                color: ColorConstants.primaryColor,
+              ),
+            ),
+            color: Colors.white,
+          ),
+          /*Material(
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 1),
+              child: IconButton(
                 icon: Icon(Icons.face),
                 onPressed: getSticker,
                 color: ColorConstants.primaryColor,
               ),
             ),
             color: Colors.white,
-          ),
+          ),*/
 
           // Edit text
           Flexible(
@@ -544,7 +749,8 @@ class ChatPageState extends State<ChatPage> {
                 onSubmitted: (value) {
                   onSendMessage(textEditingController.text, TypeMessage.text);
                 },
-                style: TextStyle(color: ColorConstants.primaryColor, fontSize: 15),
+                style:
+                    TextStyle(color: ColorConstants.primaryColor, fontSize: 15),
                 controller: textEditingController,
                 decoration: InputDecoration.collapsed(
                   hintText: 'Escriu un missatge...',
@@ -561,7 +767,8 @@ class ChatPageState extends State<ChatPage> {
               margin: EdgeInsets.symmetric(horizontal: 8),
               child: IconButton(
                 icon: Icon(Icons.send),
-                onPressed: () => onSendMessage(textEditingController.text, TypeMessage.text),
+                onPressed: () =>
+                    onSendMessage(textEditingController.text, TypeMessage.text),
                 color: ColorConstants.primaryColor,
               ),
             ),
@@ -572,7 +779,9 @@ class ChatPageState extends State<ChatPage> {
       width: double.infinity,
       height: 50,
       decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: ColorConstants.greyColor2, width: 0.5)), color: Colors.white),
+          border: Border(
+              top: BorderSide(color: ColorConstants.greyColor2, width: 0.5)),
+          color: Colors.white),
     );
   }
 
@@ -581,13 +790,15 @@ class ChatPageState extends State<ChatPage> {
       child: groupChatId.isNotEmpty
           ? StreamBuilder<QuerySnapshot>(
               stream: chatProvider.getChatStream(groupChatId, _limit),
-              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasData) {
                   listMessage = snapshot.data!.docs;
                   if (listMessage.length > 0) {
                     return ListView.builder(
                       padding: EdgeInsets.all(10),
-                      itemBuilder: (context, index) => buildItem(index, snapshot.data?.docs[index]),
+                      itemBuilder: (context, index) =>
+                          buildItem(index, snapshot.data?.docs[index]),
                       itemCount: snapshot.data?.docs.length,
                       reverse: true,
                       controller: listScrollController,
@@ -611,13 +822,29 @@ class ChatPageState extends State<ChatPage> {
             ),
     );
   }
+
+  downloadFile(String fileUrl) async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await FlutterDownloader.initialize();
+    FlutterDownloader.registerCallback(downloadCallback);
+    final externalDir = await getExternalStorageDirectory();
+    final String downloadsPath = externalDir!.path;
+    await FlutterDownloader.enqueue(
+      url: fileUrl,
+      savedDir: downloadsPath,
+      showNotification:
+          true, // show download progress in status bar (for Android)
+      openFileFromNotification:
+          true, // click on notification to open downloaded file (for Android)
+    );
+  }
 }
 
 class ChatPageArguments {
   final String peerId;
-  final String peerCognom1;
-  final String peerCognom2;
+  final String peerCognoms;
   final String peerNom;
 
-  ChatPageArguments({required this.peerId, required this.peerNom, required this.peerCognom1, required this.peerCognom2});
+  ChatPageArguments(
+      {required this.peerId, required this.peerNom, required this.peerCognoms});
 }

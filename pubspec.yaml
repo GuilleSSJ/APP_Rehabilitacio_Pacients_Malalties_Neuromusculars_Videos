@@ -46,6 +46,12 @@ dependencies:
   photo_view: ^0.13.0
   flutter_local_notifications: ^9.4.1
   flutter_launcher_icons: ^0.9.3
+  file_picker: ^4.6.1
+  flutter_localizations: 
+    sdk: flutter
+    version: ^0.0.0
+  flutter_downloader: ^1.7.4
+  downloads_path_provider_28: ^0.1.2
 
 dev_dependencies:
   flutter_test:
@@ -65,10 +71,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - images/stPau_logo.jpg
-    - images/gif1.gif
-    - images/gif2.gif
-    - images/gif3.gif
     - images/img_not_available.png
+    - images/logoNVR.jpeg
     - embed/
 
   # An image asset can refer to one or more resolution-specific "variants", see

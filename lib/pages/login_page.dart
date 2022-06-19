@@ -63,7 +63,7 @@ class LoginPageState extends State<LoginPage> {
         Fluttertoast.showToast(msg: "Error en l'autenticació");
         break;
       case Status.authenticateCanceled:
-        Fluttertoast.showToast(msg: "S'ha cancel·lat l'autenticació");
+        Fluttertoast.showToast(msg: "Email o paraula clau incorrectes");
         break;
       case Status.authenticated:
         Fluttertoast.showToast(msg: "Has iniciat sessió amb èxit");

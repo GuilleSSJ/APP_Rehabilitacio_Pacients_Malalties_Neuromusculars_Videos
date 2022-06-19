@@ -4,8 +4,7 @@ class FirestoreConstants {
   static const pathVideoCollection = "videos";
   static const pathCategoryCollection = "categories";
   static const nom = "nom";
-  static const cognom1 = "cognom1";
-  static const cognom2 = "cognom2";
+  static const cognoms = "cognoms";
   static const nhc = "nhc";
   static const edat = "edat";
   static const id = "id";
@@ -25,6 +24,7 @@ class FirestoreConstants {
   static const llistaPacients = "llistaPacients";
   static const llistaVideos = "llistaVideos";
   static const nomTerapeuta = "nomTerapeuta";
-  static const cognom1Terapeuta = "cognom1Terapeuta";
-  static const cognom2Terapeuta = "cognom2Terapeuta";
+  static const cognomsTerapeuta = "cognomsTerapeuta";
+  static const dataNaixement = "dataNaixement";
+    static const teraphistId = "teraphistId";
 }

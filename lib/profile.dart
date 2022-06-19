@@ -24,9 +24,7 @@ class _ProfileState extends State<Profile> {
     _txtControllerTargRef = TextEditingController(
         text: authProvider.getStringPref(FirestoreConstants.nomTerapeuta)! +
             ' ' +
-            authProvider.getStringPref(FirestoreConstants.cognom1Terapeuta)! +
-            ' ' +
-            authProvider.getStringPref(FirestoreConstants.cognom2Terapeuta)!);
+            authProvider.getStringPref(FirestoreConstants.cognomsTerapeuta)!);
     _txtControllerTelef = TextEditingController(text: '935537099');
     super.initState();
   }

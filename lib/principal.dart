@@ -52,10 +52,9 @@ class _PagePrincipalState extends State<PagePrincipal> {
                   authProvider.getStringPref(FirestoreConstants.chattingWith)!,
               peerNom:
                   authProvider.getStringPref(FirestoreConstants.nomTerapeuta)!,
-              peerCognom1: authProvider
-                  .getStringPref(FirestoreConstants.cognom1Terapeuta)!,
-              peerCognom2: authProvider
-                  .getStringPref(FirestoreConstants.cognom2Terapeuta)!),
+              peerCognoms: authProvider
+                  .getStringPref(FirestoreConstants.cognomsTerapeuta)!,
+        ),
         ),
         Profile(),
       ];

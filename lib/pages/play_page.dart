@@ -634,7 +634,7 @@ class _PlayPageState extends State<PlayPage> {
         "'" +
         video.title +
         "'" +
-        " de la cetegoria " +
+        " de la categoria " +
         "'" +
         widget.arguments.categoryName +
         "'.";
@@ -652,7 +652,7 @@ class _PlayPageState extends State<PlayPage> {
         "'" +
         video.title +
         "'" +
-        " de la cetegoria " +
+        " de la categoria " +
         "'" +
         widget.arguments.categoryName +
         "'.";

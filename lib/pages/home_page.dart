@@ -479,7 +479,7 @@ class HomePageState extends State<HomePage> {
                         ),
                         Container(
                           child: Text(
-                            "Cognoms: ${nvrUser.cognom1} ${nvrUser.cognom2}",
+                            "Cognoms: ${nvrUser.cognoms}",
                             maxLines: 1,
                             style:
                                 TextStyle(color: ColorConstants.primaryColor),
@@ -505,8 +505,7 @@ class HomePageState extends State<HomePage> {
                     arguments: ChatPageArguments(
                       peerId: nvrUser.id,
                       peerNom: nvrUser.nom,
-                      peerCognom1: nvrUser.cognom1,
-                      peerCognom2: nvrUser.cognom2,
+                      peerCognoms: nvrUser.cognoms,
                     ),
                   ),
                 ),

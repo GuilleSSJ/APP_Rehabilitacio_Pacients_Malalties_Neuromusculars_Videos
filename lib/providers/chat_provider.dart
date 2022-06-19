@@ -17,9 +17,9 @@ class ChatProvider {
     return prefs.getString(key);
   }
 
-  UploadTask uploadFile(File image, String fileName) {
+  UploadTask uploadFile(File file, String fileName) {
     Reference reference = firebaseStorage.ref().child(fileName);
-    UploadTask uploadTask = reference.putFile(image);
+    UploadTask uploadTask = reference.putFile(file);
     return uploadTask;
   }
 
@@ -65,4 +65,5 @@ class TypeMessage {
   static const text = 0;
   static const image = 1;
   static const sticker = 2;
+  static const video = 3;
 }

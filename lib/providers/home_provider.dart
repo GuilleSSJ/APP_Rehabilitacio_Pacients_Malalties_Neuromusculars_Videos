@@ -29,7 +29,7 @@ class HomeProvider {
           .where(FirestoreConstants.id, isEqualTo: textSearch)
           .snapshots();
     } else {
-      return firebaseFirestore.collection(pathCollection).limit(limit).snapshots();
+      return firebaseFirestore.collection(pathCollection).where(FirestoreConstants.id, whereIn: usersList).snapshots();
     }
   }
 }
