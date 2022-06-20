@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:app_video_rehabilitacio_neuromuscular/constants/color_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/firestore_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
 import 'package:http/http.dart';

@@ -12,7 +12,7 @@ import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_p
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/principal.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/principal.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 //import 'package:firebase_storage/firebase_storage.dart';

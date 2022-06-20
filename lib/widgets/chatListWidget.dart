@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/chatItemWidget.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/widgets/chatItemWidget.dart';
 
 
 class ChatListWidget extends StatelessWidget{

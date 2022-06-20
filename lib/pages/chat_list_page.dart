@@ -271,7 +271,7 @@ class HomePageState extends State<HomePage> {
           'Xat',
           style: TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
         ),
-        //actions: <Widget>[buildPopupMenu()],
+        actions: <Widget>[buildSearchBar()],
       ),
       body: WillPopScope(
         child: Stack(

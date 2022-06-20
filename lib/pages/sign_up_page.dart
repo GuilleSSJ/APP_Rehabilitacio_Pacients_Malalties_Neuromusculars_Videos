@@ -1,6 +1,8 @@
 import 'package:app_video_rehabilitacio_neuromuscular/widgets/sign_up_form_fields_generator.dart';
 import 'package:flutter/material.dart';
 
+import '../constants/color_constants.dart';
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
 
@@ -41,8 +43,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _textFormFieldGenerator.getConfirmPasswordField(
             confirmPasswordEditingController, passwordEditingController);
 
-    final nhcField =
-        _textFormFieldGenerator.getNHCField(nhcEditingController);
+    final nhcField = _textFormFieldGenerator.getNHCField(nhcEditingController);
 
     final dateField =
         _textFormFieldGenerator.getDate(context, dateController, selectedDate);
@@ -58,8 +59,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         dateController);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: ColorConstants.greyColor,
       appBar: AppBar(
+        centerTitle: true,
         title: Text(
           'Registrar Nou Pacient',
           style: TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
@@ -96,8 +98,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         fit: BoxFit.contain,
                       ),
                     ),
-                    
-                    const SizedBox(height: 25),
+                    const SizedBox(height: 15),
                     nameField,
                     const SizedBox(height: 10),
                     surnameField,
@@ -111,7 +112,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     passwordField,
                     const SizedBox(height: 10),
                     confirmPasswordField,
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
                     signUpButton,
                     const SizedBox(height: 15),
                   ],

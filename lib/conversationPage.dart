@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/chatAppBar.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/chatListWidget.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/inputWidget.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/widgets/chatAppBar.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/widgets/chatListWidget.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/widgets/inputWidget.dart';
 
 class ConversationPage extends StatefulWidget {
   @override

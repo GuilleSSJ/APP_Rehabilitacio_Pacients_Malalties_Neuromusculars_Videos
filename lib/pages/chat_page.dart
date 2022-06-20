@@ -428,7 +428,7 @@ class ChatPageState extends State<ChatPage> {
                                       if (loadingProgress == null) return child;
                                       return Container(
                                         decoration: BoxDecoration(
-                                          color: ColorConstants.greyColor2,
+                                          color: ColorConstants.primaryColor,
                                           borderRadius: BorderRadius.all(
                                             Radius.circular(8),
                                           ),
@@ -497,7 +497,7 @@ class ChatPageState extends State<ChatPage> {
                                           children: <Widget>[
                                             Container(
                                               width: 200,
-                                              color: Colors.grey,
+                                              color: ColorConstants.primaryColor,
                                               height: 80,
                                             ),
                                             Column(
@@ -513,8 +513,8 @@ class ChatPageState extends State<ChatPage> {
                                                   'Vídeo',
                                                   style: TextStyle(
                                                       fontSize: 20,
-                                                      color: ColorConstants
-                                                          .primaryColor),
+                                                      color: Colors
+                                                          .white),
                                                 ),
                                               ],
                                             ),

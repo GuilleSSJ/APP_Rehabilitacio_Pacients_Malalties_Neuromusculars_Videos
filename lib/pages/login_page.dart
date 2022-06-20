@@ -1,5 +1,5 @@
 import 'package:app_video_rehabilitacio_neuromuscular/models/models.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/principal.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/principal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/app_constants.dart';

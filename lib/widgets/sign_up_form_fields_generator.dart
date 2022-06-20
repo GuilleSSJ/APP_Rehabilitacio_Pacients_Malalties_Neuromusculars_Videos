@@ -228,7 +228,7 @@ class SignUpFormFieldsGenerator {
       loginController = context.read<AuthProvider>();
     return Material(
       elevation: 5,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(15),
       color: Colors.orange,
       child: MaterialButton(
         padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
