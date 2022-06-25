@@ -1,17 +1,13 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:app_video_rehabilitacio_neuromuscular/constants/color_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/firestore_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
-import 'package:http/http.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/video.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/chat_provider.dart';
 

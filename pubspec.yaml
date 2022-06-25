@@ -73,7 +73,6 @@ flutter:
     - images/stPau_logo.jpg
     - images/img_not_available.png
     - images/logoNVR.jpeg
-    - embed/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

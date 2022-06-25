@@ -3,8 +3,6 @@ import 'package:app_video_rehabilitacio_neuromuscular/providers/auth_provider.da
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'principal.dart';
-
 class Profile extends StatefulWidget {
   @override
   _ProfileState createState() => _ProfileState();

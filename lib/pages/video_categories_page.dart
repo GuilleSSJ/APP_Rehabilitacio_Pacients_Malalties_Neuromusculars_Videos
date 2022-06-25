@@ -1,23 +1,15 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:app_video_rehabilitacio_neuromuscular/models/video.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/login_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/play_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/constants/app_constants.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/constants/color_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/providers.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/utils/utils.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
 import '../models/models.dart';
@@ -60,7 +52,8 @@ class _CategoriesState extends State<Categories> {
     }
     isAdmin = videoProvider.getBoolPref("isAdmin")!;
     if (!isAdmin) {
-      assignedPatientVideos = videoProvider.getPrefStringList(FirestoreConstants.llistaVideos)!;
+      assignedPatientVideos =
+          videoProvider.getPrefStringList(FirestoreConstants.llistaVideos)!;
     }
     getUserCategories();
     getUser().then((value) {
@@ -114,7 +107,7 @@ class _CategoriesState extends State<Categories> {
     return videoList;
   }
 
- /* bool enableCategory(List<String> categoryVideos, List<String> userVideos) {
+  /* bool enableCategory(List<String> categoryVideos, List<String> userVideos) {
     if (categoryVideos.isNotEmpty && categoryVideos.every((item) => userVideos.contains(item))) {
     return true;
   } else {
@@ -123,77 +116,78 @@ class _CategoriesState extends State<Categories> {
   }*/
 
   Widget buildItem(BuildContext context, Category category) {
-      return Container(
-        child: TextButton(
-          child: Row(
-            children: <Widget>[
-              Material(
-                child: Image.network(
-                  category.photoURL,
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
-                ),
-                borderRadius: BorderRadius.all(Radius.circular(25)),
-                clipBehavior: Clip.hardEdge,
+    return Container(
+      child: TextButton(
+        child: Row(
+          children: <Widget>[
+            Material(
+              child: Image.network(
+                category.photoURL,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
               ),
-              Flexible(
-                child: Container(
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        child: Text(
-                          category.nom,
-                          maxLines: 1,
-                          style: TextStyle(color: ColorConstants.primaryColor),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(10, 0, 0, 5),
+              borderRadius: BorderRadius.all(Radius.circular(25)),
+              clipBehavior: Clip.hardEdge,
+            ),
+            Flexible(
+              child: Container(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      child: Text(
+                        category.nom,
+                        maxLines: 1,
+                        style: TextStyle(color: ColorConstants.primaryColor),
                       ),
-                    ],
-                  ),
-                  margin: EdgeInsets.only(left: 20),
+                      alignment: Alignment.centerLeft,
+                      margin: EdgeInsets.fromLTRB(10, 0, 0, 5),
+                    ),
+                  ],
+                ),
+                margin: EdgeInsets.only(left: 20),
+              ),
+            ),
+          ],
+        ),
+        onPressed: () async {
+          List<Video> videos = await videoProvider.getVideoList(
+              nvrUser.videos,
+              category.llistaVideos,
+              FirestoreConstants.pathVideoCollection,
+              isAdmin);
+          if (videos.isNotEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PlayPage(
+                  arguments: PlayPageArguments(
+                      videos: videos,
+                      userVideos: userVideos,
+                      categoryName: category.nom,
+                      categoryVideos: category.llistaVideos),
+                  patientId: widget.patientId,
                 ),
               ),
-            ],
-          ),
-          onPressed: () async {
-            List<Video> videos = await videoProvider.getVideoList(
-                nvrUser.videos,
-                category.llistaVideos,
-                FirestoreConstants.pathVideoCollection,
-                isAdmin);
-            if (videos.isNotEmpty) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PlayPage(
-                    arguments: PlayPageArguments(
-                        videos: videos,
-                        userVideos: userVideos,
-                        categoryName: category.nom,
-                        categoryVideos: category.llistaVideos),
-                    patientId: widget.patientId,
-                  ),
-                ),
-              );
-            }
-            else {
-              Fluttertoast.showToast(msg: "No tens activitats en aquesta categoria");
-            }
-          },
-          style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all<Color>(ColorConstants.greyColor2),
-            shape: MaterialStateProperty.all<OutlinedBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-              ),
+            );
+          } else {
+            Fluttertoast.showToast(
+                msg: "No tens activitats en aquesta categoria");
+          }
+        },
+        style: ButtonStyle(
+          backgroundColor:
+              MaterialStateProperty.all<Color>(ColorConstants.greyColor2),
+          shape: MaterialStateProperty.all<OutlinedBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
           ),
         ),
-        margin: EdgeInsets.only(bottom: 10, left: 5, right: 5),
-      );
-    }
+      ),
+      margin: EdgeInsets.only(bottom: 10, left: 5, right: 5),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

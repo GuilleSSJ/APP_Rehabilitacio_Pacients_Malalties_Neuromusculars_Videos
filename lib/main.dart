@@ -1,33 +1,26 @@
-import 'package:app_video_rehabilitacio_neuromuscular/pages/home_page.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/pages/login_page.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/pages/pages.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/pages/patients_list.page.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/splash_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/auth_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/chat_provider.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/providers/home_provider.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/providers/chat_list_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/manage_videos_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/patients_list_provider.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/providers/setting_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/pages/principal.dart';
+
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-//import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   SharedPreferences prefs = await SharedPreferences.getInstance();
-   runApp(MyApp(prefs: prefs));
+  runApp(MyApp(prefs: prefs));
 }
 
 class MyApp extends StatelessWidget {
@@ -39,7 +32,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return MultiProvider(
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthProvider>(
           create: (_) => AuthProvider(
@@ -47,13 +40,6 @@ class MyApp extends StatelessWidget {
             //googleSignIn: GoogleSignIn(),
             prefs: this.prefs,
             firebaseFirestore: this.firebaseFirestore,
-          ),
-        ),
-        Provider<SettingProvider>(
-          create: (_) => SettingProvider(
-            prefs: this.prefs,
-            firebaseFirestore: this.firebaseFirestore,
-            firebaseStorage: this.firebaseStorage,
           ),
         ),
         Provider<HomeProvider>(
@@ -83,7 +69,7 @@ class MyApp extends StatelessWidget {
             firebaseStorage: this.firebaseStorage,
           ),
         ),
-           Provider<ManageVideosProvider>(
+        Provider<ManageVideosProvider>(
           create: (_) => ManageVideosProvider(
             prefs: this.prefs,
             firebaseFirestore: this.firebaseFirestore,
@@ -92,25 +78,22 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-      title: 'Planificació Cognitiva',
-      theme: ThemeData(
-        primaryColor: Colors.orange,
-      ),
-      localizationsDelegates: [
-         GlobalMaterialLocalizations.delegate
-       ],
-       supportedLocales: [
-         const Locale('en'),
-         const Locale('fr'),
-         const Locale('es'),
-         const Locale('cat')
-       ],
-      
-      home: AnimatedSplashScreen(
-        splash: Image.asset(
-          'images/stPau_logo.jpg',
+        title: 'Planificació Cognitiva',
+        theme: ThemeData(
+          primaryColor: Colors.orange,
         ),
-        nextScreen: /*StreamBuilder(
+        localizationsDelegates: [GlobalMaterialLocalizations.delegate],
+        supportedLocales: [
+          const Locale('en'),
+          const Locale('fr'),
+          const Locale('es'),
+          const Locale('cat')
+        ],
+        home: AnimatedSplashScreen(
+          splash: Image.asset(
+            'images/stPau_logo.jpg',
+          ),
+          nextScreen: /*StreamBuilder(
     stream: DataBaseService().patients,
     builder: (context, AsyncSnapshot snapshot) {
       if (!snapshot.hasData) {
@@ -124,16 +107,12 @@ class MyApp extends StatelessWidget {
       }
     },
   ),*/
-        SplashPage(),
-        backgroundColor: Colors.white,
-        splashIconSize: 300,
-      
+              SplashPage(),
+          backgroundColor: Colors.white,
+          splashIconSize: 300,
+        ),
       ),
-
-      
-    ),
-  );
-
+    );
   }
 
   Widget buildItem(BuildContext context, DocumentSnapshot document) {

@@ -3,7 +3,6 @@ import 'package:app_video_rehabilitacio_neuromuscular/models/video.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/constants.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/models/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
@@ -22,7 +21,7 @@ class CategoryProvider {
     return prefs.getString(key);
   }
 
-   List<String>? getPrefStringList(String key) {
+  List<String>? getPrefStringList(String key) {
     return prefs.getStringList(key);
   }
 
@@ -112,7 +111,8 @@ class CategoryProvider {
         .snapshots();
   }
 
-  Future<List<Category>> getCategories(List<QueryDocumentSnapshot<Object?>> docsList) async {
+  Future<List<Category>> getCategories(
+      List<QueryDocumentSnapshot<Object?>> docsList) async {
     List<Category> resultList = [];
     if (docsList.isNotEmpty) {
       for (DocumentSnapshot doc in docsList) {

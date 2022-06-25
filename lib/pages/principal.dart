@@ -1,19 +1,14 @@
 import 'dart:ffi';
 
 import 'package:app_video_rehabilitacio_neuromuscular/constants/firestore_constants.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/conversationPage.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/nvr_user.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/chat_page.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/pages/home_page.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/pages/login_page.dart';
+import 'package:app_video_rehabilitacio_neuromuscular/pages/chat_list_page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/patients_list.page.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/video_categories_page.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/providers/home_provider.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/providers.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/pages/profile.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/pages/play_page.dart';
 import 'package:provider/provider.dart';
 //import 'package:firebase_core/firebase_core.dart';
 

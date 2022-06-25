@@ -9,7 +9,7 @@ class HomeProvider {
 
   final SharedPreferences prefs;
 
-    bool? getBoolPref(String key) {
+  bool? getBoolPref(String key) {
     return prefs.getBool(key);
   }
 
@@ -17,11 +17,16 @@ class HomeProvider {
     return prefs.getStringList(key);
   }
 
-  Future<void> updateDataFirestore(String collectionPath, String path, Map<String, String> dataNeedUpdate) {
-    return firebaseFirestore.collection(collectionPath).doc(path).update(dataNeedUpdate);
+  Future<void> updateDataFirestore(
+      String collectionPath, String path, Map<String, String> dataNeedUpdate) {
+    return firebaseFirestore
+        .collection(collectionPath)
+        .doc(path)
+        .update(dataNeedUpdate);
   }
 
-  Stream<QuerySnapshot> getStreamFireStore(String pathCollection, int limit, String? textSearch, List<String> usersList) {
+  Stream<QuerySnapshot> getStreamFireStore(String pathCollection, int limit,
+      String? textSearch, List<String> usersList) {
     if (textSearch?.isNotEmpty == true) {
       return firebaseFirestore
           .collection(pathCollection)
@@ -30,7 +35,10 @@ class HomeProvider {
           .where(FirestoreConstants.id, whereIn: usersList)
           .snapshots();
     } else {
-      return firebaseFirestore.collection(pathCollection).where(FirestoreConstants.id, whereIn: usersList).snapshots();
+      return firebaseFirestore
+          .collection(pathCollection)
+          .where(FirestoreConstants.id, whereIn: usersList)
+          .snapshots();
     }
   }
 }

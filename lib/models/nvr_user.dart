@@ -13,7 +13,16 @@ class NVRUser {
   List<String> videos;
   List<String> patientsIdList;
 
-  NVRUser({required this.id, required this.nom, required this.cognoms, required this.nhc, required this.dataNaixement,required this.videos, required this.isAdmin, required this.chattingWith, required this.patientsIdList});
+  NVRUser(
+      {required this.id,
+      required this.nom,
+      required this.cognoms,
+      required this.nhc,
+      required this.dataNaixement,
+      required this.videos,
+      required this.isAdmin,
+      required this.chattingWith,
+      required this.patientsIdList});
 
   Map<String, dynamic> toMap() {
     return {
@@ -60,19 +69,19 @@ class NVRUser {
       isAdmin = doc.get(FirestoreConstants.isAdmin);
     } catch (e) {}
     try {
-      patientsIdList = doc.get(FirestoreConstants.llistaPacients).cast<String>();
+      patientsIdList =
+          doc.get(FirestoreConstants.llistaPacients).cast<String>();
     } catch (e) {}
     return NVRUser(
-      id: doc.id,
-      nom: nom,
-      cognoms: cognoms,
-      nhc: nhc,
-      dataNaixement: dataNaixement,
-      chattingWith: chattingWith,
-      videos: videos,
-      isAdmin: isAdmin, 
-      patientsIdList: patientsIdList
-    );
+        id: doc.id,
+        nom: nom,
+        cognoms: cognoms,
+        nhc: nhc,
+        dataNaixement: dataNaixement,
+        chattingWith: chattingWith,
+        videos: videos,
+        isAdmin: isAdmin,
+        patientsIdList: patientsIdList);
   }
 
   List<String> getUserAssignedVideos() {
@@ -87,33 +96,32 @@ class NVRUser {
     return nom;
   }
 
-   String getNHC() {
+  String getNHC() {
     return nhc;
   }
 
-   String getAge() {
+  String getAge() {
     var inputFormat = DateFormat('dd/M/yyyy');
     var date1 = inputFormat.parse(dataNaixement);
 
-     var outputFormat = DateFormat('yyyy-MM-dd');
-     var date2 = outputFormat.format(date1); 
+    var outputFormat = DateFormat('yyyy-MM-dd');
+    var date2 = outputFormat.format(date1);
 
     DateTime birthDate = DateTime.parse(date2);
     DateTime today = DateTime.now();
 
     int age = today.year - birthDate.year;
-  int month1 = today.month;
-  int month2 = birthDate.month;
-  if (month2 > month1) {
-    age--;
-  } else if (month1 == month2) {
-    int day1 = today.day;
-    int day2 = birthDate.day;
-    if (day2 > day1) {
+    int month1 = today.month;
+    int month2 = birthDate.month;
+    if (month2 > month1) {
       age--;
+    } else if (month1 == month2) {
+      int day1 = today.day;
+      int day2 = birthDate.day;
+      if (day2 > day1) {
+        age--;
+      }
     }
+    return age.toString();
   }
-  return age.toString();
-  }
-
 }

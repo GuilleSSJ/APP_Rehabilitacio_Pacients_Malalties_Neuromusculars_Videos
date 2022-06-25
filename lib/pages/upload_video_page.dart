@@ -1,26 +1,21 @@
-import 'package:app_video_rehabilitacio_neuromuscular/models/video.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/pages/login_page.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/pages/play_page.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/providers/video_category_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class UploadVideo extends StatefulWidget {
-  const UploadVideo({ Key? key }) : super(key: key);
+  const UploadVideo({Key? key}) : super(key: key);
 
   @override
   State<UploadVideo> createState() => _UploadVideoState();
 }
 
 class _UploadVideoState extends State<UploadVideo> {
-   final _emailController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwdController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _validEmail = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+  final _validEmail = RegExp(
+      r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
   bool _isObscure = true;
 
-   @override
+  @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
     // widget tree.
@@ -39,7 +34,7 @@ class _UploadVideoState extends State<UploadVideo> {
       return null;
   }
 
-    String? validatePassword(String? value) {
+  String? validatePassword(String? value) {
     String valueString = value as String;
     if (valueString.isEmpty) {
       return "* Camp Requerit";
@@ -49,62 +44,63 @@ class _UploadVideoState extends State<UploadVideo> {
       return null;
   }
 
-
   @override
   Widget build(BuildContext context) {
-     return Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 20),
-              child: TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Correu Electrònic',
-                    hintText: "Introdueix l'adreça del teu email"
-                    ),
-                validator: validateEmail,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 15.0, right: 15.0, top: 0, bottom: 20),
+                child: TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Correu Electrònic',
+                      hintText: "Introdueix l'adreça del teu email"),
+                  validator: validateEmail,
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 20),
-              child: TextFormField(
-                obscureText: _isObscure,
-                controller: _passwdController,
-                decoration: InputDecoration(
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 15.0, right: 15.0, top: 0, bottom: 20),
+                child: TextFormField(
+                  obscureText: _isObscure,
+                  controller: _passwdController,
+                  decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Contrasenya',
                     hintText: "Introdueix la teva contrasenya",
                     suffixIcon: IconButton(
-                          icon: Icon(_isObscure
-                              ? Icons.visibility_off
-                              : Icons.visibility),
-                          onPressed: () {
-                            setState(() {
-                              _isObscure = !_isObscure;
-                            });
-                          }),
-                    ),
-                validator: validatePassword,
+                        icon: Icon(_isObscure
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () {
+                          setState(() {
+                            _isObscure = !_isObscure;
+                          });
+                        }),
+                  ),
+                  validator: validatePassword,
+                ),
               ),
-            ),
-            SizedBox(
-              height: 110,
-            ),
-            Container(
-              height: 50,
-              width: 250,
-              decoration: BoxDecoration(
-                  color: Colors.orange, borderRadius: BorderRadius.circular(20)),
-              child: FlatButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                  if (true) {
+              SizedBox(
+                height: 110,
+              ),
+              Container(
+                height: 50,
+                width: 250,
+                decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(20)),
+                child: FlatButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      if (true) {
                         /*Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -115,19 +111,18 @@ class _UploadVideoState extends State<UploadVideo> {
                     ),
                   ),
                 );*/
-                  }
-                 }
-                },
-                
-                child: Text(
-                  'Iniciar Sessió',
-                  style: TextStyle(color: Colors.white, fontSize: 22),
+                      }
+                    }
+                  },
+                  child: Text(
+                    'Iniciar Sessió',
+                    style: TextStyle(color: Colors.white, fontSize: 22),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

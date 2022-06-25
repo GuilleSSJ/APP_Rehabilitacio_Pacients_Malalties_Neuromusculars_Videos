@@ -2,16 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
-import 'package:app_video_rehabilitacio_neuromuscular/providers/chat_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/constants/color_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/models.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/providers.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -20,7 +17,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../widgets/widgets.dart';
-import 'pages.dart';
+import 'login_page.dart';
+
 
 class ChatPage extends StatefulWidget {
   ChatPage({Key? key, required this.arguments}) : super(key: key);
@@ -497,7 +495,8 @@ class ChatPageState extends State<ChatPage> {
                                           children: <Widget>[
                                             Container(
                                               width: 200,
-                                              color: ColorConstants.primaryColor,
+                                              color:
+                                                  ColorConstants.primaryColor,
                                               height: 80,
                                             ),
                                             Column(
@@ -513,8 +512,7 @@ class ChatPageState extends State<ChatPage> {
                                                   'Vídeo',
                                                   style: TextStyle(
                                                       fontSize: 20,
-                                                      color: Colors
-                                                          .white),
+                                                      color: Colors.white),
                                                 ),
                                               ],
                                             ),

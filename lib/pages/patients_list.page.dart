@@ -50,7 +50,7 @@ class _PatientsListState extends State<PatientsList> {
     patientsIdList = patientListProvider.getPrefStringList("llistaPacients")!;
     _patientsList = intializePatientsList(
         patientsIdList, FirestoreConstants.pathUserCollection);
-     _foundPatients = _patientsList;
+    _foundPatients = _patientsList;
     super.initState();
   }
 
@@ -62,132 +62,134 @@ class _PatientsListState extends State<PatientsList> {
 
   Future<List<NVRUser>> intializePatientsList(
       patientsList, pathCollection) async {
-    return await patientListProvider.getPatientsList(patientsList, pathCollection);
+    return await patientListProvider.getPatientsList(
+        patientsList, pathCollection);
   }
 
   // This function is called whenever the text field changes
   void _runFilter(String enteredName) {
     // if the search field is empty or only contains white-space, we'll display all users
-      setState(() {
-        if (enteredName.isEmpty) {
-          _foundPatients = _patientsList;
-        } else {
-          _patientsList.then((value) {
-            _foundPatients = Future.value(value.where((user) => user
-                  .getName()
-                  .toLowerCase()
-                  .contains(enteredName.toLowerCase()))
-              .toList());
+    setState(() {
+      if (enteredName.isEmpty) {
+        _foundPatients = _patientsList;
+      } else {
+        _patientsList.then(
+          (value) {
+            _foundPatients = Future.value(value
+                .where((user) => user
+                    .getName()
+                    .toLowerCase()
+                    .contains(enteredName.toLowerCase()))
+                .toList());
           },
-        );  
-        }
-      });
+        );
+      }
+    });
   }
 
   Widget buildItem(BuildContext context, NVRUser nvrUser) {
-      return Card(
-        key: ValueKey(nvrUser.getNHC()),
-        color: Colors.orange,
-        elevation: 4,
-        margin: const EdgeInsets.symmetric(vertical: 10),
-        child: ListTile(
-            leading: Text(
-              nvrUser.getNHC().toString(),
-              style: const TextStyle(fontSize: 20, color: Colors.white),
+    return Card(
+      key: ValueKey(nvrUser.getNHC()),
+      color: Colors.orange,
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: ListTile(
+        leading: Text(
+          nvrUser.getNHC().toString(),
+          style: const TextStyle(fontSize: 20, color: Colors.white),
+        ),
+        title: Text(nvrUser.getName(),
+            style: const TextStyle(fontSize: 16, color: Colors.white)),
+        subtitle: Text(
+          nvrUser.getAge() + ' anys',
+          style: const TextStyle(fontSize: 16, color: Colors.white),
+        ),
+        onTap: () async {
+          List<Video> userVideos =
+              await patientListProvider.getUserVideoList(nvrUser.videos);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ManageVideos(
+                arguments: ManageVideosArguments(
+                    userVideos: nvrUser.videos,
+                    videos: userVideos,
+                    patientId: nvrUser.id),
+              ),
             ),
-            title: Text(nvrUser.getName(),
-                style: const TextStyle(fontSize: 16, color: Colors.white)),
-            subtitle: Text(
-              nvrUser.getAge() + ' anys',
-              style: const TextStyle(fontSize: 16, color: Colors.white),
-            ),
-            onTap: () async {
-              List<Video> userVideos = await patientListProvider.getUserVideoList(nvrUser.videos);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ManageVideos(
-                      arguments: ManageVideosArguments(
-                        userVideos: nvrUser.videos,
-                        videos: userVideos,
-                        patientId: nvrUser.id
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-      );
+          );
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.orange,
-        centerTitle: true,
-        title: Text(
-          'Manteniment Pacients',
-          style: TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
+        appBar: AppBar(
+          backgroundColor: Colors.orange,
+          centerTitle: true,
+          title: Text(
+            'Manteniment Pacients',
+            style:
+                TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            TextField(
-              onChanged: (value) => _runFilter(value),
-              decoration: const InputDecoration(
-                  labelText: 'Cercar', suffixIcon: Icon(Icons.search)),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            Expanded(
-              child: FutureBuilder<List<NVRUser>>(
-                future: _foundPatients,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if ((snapshot.data?.length ?? 0) > 0) {
-                      return ListView.builder(
-                        padding: EdgeInsets.all(10),
-                        itemBuilder: (context, index) => buildItem(
-                            context, snapshot.data!.elementAt(index)),
-                        itemCount: snapshot.data?.length,
-                      );
+        body: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              const SizedBox(
+                height: 20,
+              ),
+              TextField(
+                onChanged: (value) => _runFilter(value),
+                decoration: const InputDecoration(
+                    labelText: 'Cercar', suffixIcon: Icon(Icons.search)),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Expanded(
+                child: FutureBuilder<List<NVRUser>>(
+                  future: _foundPatients,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      if ((snapshot.data?.length ?? 0) > 0) {
+                        return ListView.builder(
+                          padding: EdgeInsets.all(10),
+                          itemBuilder: (context, index) => buildItem(
+                              context, snapshot.data!.elementAt(index)),
+                          itemCount: snapshot.data?.length,
+                        );
+                      } else {
+                        return Center(
+                          child: Text("No hi ha pacients"),
+                        );
+                      }
                     } else {
                       return Center(
-                        child: Text("No hi ha pacients"),
+                        child: CircularProgressIndicator(
+                          color: ColorConstants.themeColor,
+                        ),
                       );
                     }
-                  } else {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: ColorConstants.themeColor,
-                      ),
-                    );
-                  }
-                },
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => SignUpScreen()),
+              MaterialPageRoute(builder: (context) => SignUpScreen()),
             );
           },
           backgroundColor: Colors.orange,
           icon: Icon(Icons.add),
           label: Text("Registrar Pacient"),
-        )
-    );
+        ));
   }
 }

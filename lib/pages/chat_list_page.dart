@@ -4,19 +4,18 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/constants/app_constants.dart';
-import 'package:app_video_rehabilitacio_neuromuscular/constants/color_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/providers.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/utils/utils.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 
 import '../models/models.dart';
 import '../widgets/widgets.dart';
-import 'pages.dart';
+import 'chat_page.dart';
+import 'login_page.dart';
+
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -271,7 +270,7 @@ class HomePageState extends State<HomePage> {
           'Xat',
           style: TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
         ),
-        actions: <Widget>[buildSearchBar()],
+        //actions: <Widget>[buildSearchBar()],
       ),
       body: WillPopScope(
         child: Stack(

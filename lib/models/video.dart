@@ -8,13 +8,12 @@ class Video {
   String url;
   String photoURL;
 
-  Video({
-    required this.videoId,
-    required this.categoryId,
-    required this.title,
-    required this.url,
-    required this.photoURL
-  });
+  Video(
+      {required this.videoId,
+      required this.categoryId,
+      required this.title,
+      required this.url,
+      required this.photoURL});
 
   Map<String, dynamic> toJson() {
     return {
@@ -31,7 +30,12 @@ class Video {
     String title = doc.get(FirestoreConstants.title);
     String url = videoURL;
     String photoURL = imageURL;
-    return Video(videoId: videoId, categoryId: categoryId, title: title, url: url, photoURL:photoURL);
+    return Video(
+        videoId: videoId,
+        categoryId: categoryId,
+        title: title,
+        url: url,
+        photoURL: photoURL);
   }
 
   String getVideoID() {

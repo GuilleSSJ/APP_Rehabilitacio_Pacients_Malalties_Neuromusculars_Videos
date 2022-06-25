@@ -1,13 +1,12 @@
 import 'package:app_video_rehabilitacio_neuromuscular/pages/principal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/color_constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../models/nvr_user.dart';
-import 'pages.dart';
+import 'login_page.dart';
 
 class SplashPage extends StatefulWidget {
   SplashPage({Key? key}) : super(key: key);
@@ -36,17 +35,16 @@ class SplashPageState extends State<SplashPage> {
         context,
         MaterialPageRoute(builder: (context) => PagePrincipal()),
       );
-    }
-    else {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
-    );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
     }
   }
 
-  Future<NVRUser> getUser() async{
-    DocumentSnapshot userDoc= await authProvider.getUserDocument();
+  Future<NVRUser> getUser() async {
+    DocumentSnapshot userDoc = await authProvider.getUserDocument();
     return NVRUser.fromDocument(userDoc);
   }
 
@@ -61,7 +59,8 @@ class SplashPageState extends State<SplashPage> {
             Container(
               width: 20,
               height: 20,
-              child: CircularProgressIndicator(color: ColorConstants.themeColor),
+              child:
+                  CircularProgressIndicator(color: ColorConstants.themeColor),
             ),
           ],
         ),

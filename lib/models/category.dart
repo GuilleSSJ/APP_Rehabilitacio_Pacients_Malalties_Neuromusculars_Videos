@@ -7,12 +7,11 @@ class Category {
   String nom;
   String photoURL;
 
-  Category({
-    required this.id,
-    required this.llistaVideos,
-    required this.nom,
-    required this.photoURL
-  });
+  Category(
+      {required this.id,
+      required this.llistaVideos,
+      required this.nom,
+      required this.photoURL});
 
   Map<String, dynamic> toJson() {
     return {
@@ -25,10 +24,12 @@ class Category {
 
   factory Category.fromDocument(DocumentSnapshot doc) {
     String id = doc.get(FirestoreConstants.id);
-    List<String> llistaVideos = doc.get(FirestoreConstants.llistaVideos).cast<String>();
+    List<String> llistaVideos =
+        doc.get(FirestoreConstants.llistaVideos).cast<String>();
     String nom = doc.get(FirestoreConstants.nom);
     String photoURL = doc.get(FirestoreConstants.photoURL);
-    return Category(id: id, llistaVideos: llistaVideos, nom: nom, photoURL:photoURL);
+    return Category(
+        id: id, llistaVideos: llistaVideos, nom: nom, photoURL: photoURL);
   }
 
   String getVideoID() {

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/constants.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/models/models.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum Status {
@@ -142,8 +141,8 @@ class AuthProvider extends ChangeNotifier {
           } else {
             await prefs.setStringList(FirestoreConstants.llistaPacients,
                 documentSnapshot.get("llistaPacients").cast<String>());
-            await prefs.setString(FirestoreConstants.teraphistId,
-                documentSnapshot.get("id"));
+            await prefs.setString(
+                FirestoreConstants.teraphistId, documentSnapshot.get("id"));
           }
         }
         _status = Status.authenticated;
@@ -245,11 +244,12 @@ class AuthProvider extends ChangeNotifier {
       "llistaPacients": FieldValue.arrayUnion([user.uid])
     });
 
-    List <String> llistaPacients = prefs.getStringList("llistaPacients")!.cast<String>();
+    List<String> llistaPacients =
+        prefs.getStringList("llistaPacients")!.cast<String>();
     llistaPacients.add(user.uid);
 
-    await prefs.setStringList(FirestoreConstants.llistaPacients,
-               llistaPacients);
+    await prefs.setStringList(
+        FirestoreConstants.llistaPacients, llistaPacients);
 
     Fluttertoast.showToast(msg: "Pacient registrat amb èxit! :) ");
   }
