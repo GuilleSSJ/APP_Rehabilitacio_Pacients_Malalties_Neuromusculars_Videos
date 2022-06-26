@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:app_video_rehabilitacio_neuromuscular/constants/constants.dart';
@@ -39,6 +40,7 @@ class HomePageState extends State<HomePage> {
 
   late AuthProvider authProvider;
   late String currentUserId;
+  late String curretUserEmail;
   late HomeProvider homeProvider;
   List<String> usersList = [];
   Debouncer searchDebouncer = Debouncer(milliseconds: 300);
@@ -59,6 +61,7 @@ class HomePageState extends State<HomePage> {
 
     if (authProvider.getUserFirebaseId()?.isNotEmpty == true) {
       currentUserId = authProvider.getUserFirebaseId()!;
+      curretUserEmail = FirebaseAuth.instance.currentUser!.email!;
     } else {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => LoginPage()),
@@ -505,6 +508,8 @@ class HomePageState extends State<HomePage> {
                       peerId: nvrUser.id,
                       peerNom: nvrUser.nom,
                       peerCognoms: nvrUser.cognoms,
+                      subjectEmail: curretUserEmail,
+                      recipientEmail: nvrUser.email
                     ),
                   ),
                 ),

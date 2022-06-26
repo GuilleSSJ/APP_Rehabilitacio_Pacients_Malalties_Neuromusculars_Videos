@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 class NVRUser {
   String id;
+  String email;
   String cognoms;
   String nom;
   String nhc;
@@ -12,9 +13,11 @@ class NVRUser {
   String chattingWith;
   List<String> videos;
   List<String> patientsIdList;
+  List<bool> doneActivities;
 
   NVRUser(
       {required this.id,
+      required this.email,
       required this.nom,
       required this.cognoms,
       required this.nhc,
@@ -22,7 +25,8 @@ class NVRUser {
       required this.videos,
       required this.isAdmin,
       required this.chattingWith,
-      required this.patientsIdList});
+      required this.patientsIdList,
+      required this.doneActivities});
 
   Map<String, dynamic> toMap() {
     return {
@@ -34,11 +38,13 @@ class NVRUser {
       FirestoreConstants.dataNaixement: dataNaixement,
       FirestoreConstants.chattingWith: chattingWith,
       FirestoreConstants.llistaVideos: videos,
+      FirestoreConstants.llistaActivitatsFetes: doneActivities
     };
   }
 
   factory NVRUser.fromDocument(DocumentSnapshot doc) {
     String nom = "";
+     String email = "";
     String cognoms = "";
     String chattingWith = "";
     String nhc = "";
@@ -46,9 +52,14 @@ class NVRUser {
     List<String> videos = [];
     bool isAdmin = false;
     List<String> patientsIdList = [];
+    List<bool> doneActivities = [];
+
 
     try {
       nom = doc.get(FirestoreConstants.nom);
+    } catch (e) {}
+    try {
+      email = doc.get(FirestoreConstants.email);
     } catch (e) {}
     try {
       cognoms = doc.get(FirestoreConstants.cognoms);
@@ -72,8 +83,13 @@ class NVRUser {
       patientsIdList =
           doc.get(FirestoreConstants.llistaPacients).cast<String>();
     } catch (e) {}
+    try {
+      doneActivities =
+          doc.get(FirestoreConstants.llistaActivitatsFetes).cast<bool>();
+    } catch (e) {}
     return NVRUser(
         id: doc.id,
+        email: email,
         nom: nom,
         cognoms: cognoms,
         nhc: nhc,
@@ -81,7 +97,8 @@ class NVRUser {
         chattingWith: chattingWith,
         videos: videos,
         isAdmin: isAdmin,
-        patientsIdList: patientsIdList);
+        patientsIdList: patientsIdList,
+        doneActivities: doneActivities);
   }
 
   List<String> getUserAssignedVideos() {

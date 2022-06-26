@@ -35,6 +35,7 @@ class _CategoriesState extends State<Categories> {
   bool isAdmin = false;
   List<String> userVideos = [];
   List<String> assignedPatientVideos = [];
+  List<bool> doneActivities = [];
   late NVRUser nvrUser;
   Future<List<Category>> categories = Future.value([]);
 
@@ -54,6 +55,7 @@ class _CategoriesState extends State<Categories> {
     if (!isAdmin) {
       assignedPatientVideos =
           videoProvider.getPrefStringList(FirestoreConstants.llistaVideos)!;
+      doneActivities = List.filled(assignedPatientVideos.length, false);
     }
     getUserCategories();
     getUser().then((value) {
@@ -61,7 +63,13 @@ class _CategoriesState extends State<Categories> {
         nvrUser = value;
         if (isAdmin) {
           setUserVideos(widget.patientId);
-        } // Future is completed with a value.
+          setUserDoneActivities(widget.patientId);
+        } else {
+          setUserDoneActivities(currentUserId);
+          setUserVideos(currentUserId);
+        }
+
+        // Future is completed with a value.
       });
     });
     super.initState();
@@ -82,6 +90,14 @@ class _CategoriesState extends State<Categories> {
     videoProvider.getPatientAssignedVideos(patientId).then((value) {
       setState(() {
         userVideos = value;
+      });
+    });
+  }
+
+  void setUserDoneActivities(String patientId) {
+    videoProvider.getPatientDoneActivities(patientId).then((value) {
+      setState(() {
+        doneActivities = value;
       });
     });
   }
@@ -164,6 +180,7 @@ class _CategoriesState extends State<Categories> {
                   arguments: PlayPageArguments(
                       videos: videos,
                       userVideos: userVideos,
+                      doneActivities: doneActivities,
                       categoryName: category.nom,
                       categoryVideos: category.llistaVideos),
                   patientId: widget.patientId,

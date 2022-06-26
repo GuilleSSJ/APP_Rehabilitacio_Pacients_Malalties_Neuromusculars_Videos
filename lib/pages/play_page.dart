@@ -28,6 +28,7 @@ class _PlayPageState extends State<PlayPage> {
   late ChatProvider chatProvider;
   late bool isAdmin;
   late List<bool> assignedVideos;
+  late List<bool> doneActivities;
 
   List<Video> get _clips {
     return widget.arguments.videos;
@@ -39,6 +40,10 @@ class _PlayPageState extends State<PlayPage> {
 
   List<String> get _categoryVideos {
     return widget.arguments.categoryVideos;
+  }
+
+  List<bool> get _doneActivities {
+    return widget.arguments.doneActivities;
   }
 
   var _playingIndex = -1;
@@ -95,6 +100,7 @@ class _PlayPageState extends State<PlayPage> {
     videoProvider = context.read<CategoryProvider>();
     chatProvider = context.read<ChatProvider>();
     assignedVideos = List.filled(_categoryVideos.length, false);
+    doneActivities = _doneActivities;
     Wakelock.enable();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     _initializeAndPlay(0);
@@ -605,6 +611,18 @@ class _PlayPageState extends State<PlayPage> {
                         ),
                       ),
               ),
+              if (!isAdmin)
+                if (doneActivities.isNotEmpty)
+                  if (doneActivities[_userVideos.indexOf(_categoryVideos[index])])
+                    Positioned(
+                      // will be positioned in the top right of the container
+                      top: 0,
+                      right: 0,
+                      child: Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.green,
+                      ),
+                    )
             ],
           ),
         ),
@@ -671,12 +689,15 @@ class _PlayPageState extends State<PlayPage> {
         String categoryVideoId = _categoryVideos[index];
         if (!isAssigned && !_userVideos.contains(categoryVideoId)) {
           _userVideos.add(categoryVideoId);
+          doneActivities.add(false);
         } else {
+           doneActivities.removeAt(_userVideos.indexOf(categoryVideoId));
           _userVideos.remove(categoryVideoId);
         }
         assignedVideos[index] = !isAssigned;
         isAssigned = assignedVideos[index];
         videoProvider.updateActivitiesList(widget.patientId, _userVideos);
+        videoProvider.updateDoneActivities(widget.patientId, doneActivities);
         Navigator.of(context).pop();
       },
     );
@@ -712,6 +733,10 @@ class _PlayPageState extends State<PlayPage> {
     Widget completedButton = FlatButton(
       child: Text("Completar"),
       onPressed: () {
+        String categoryVideoId = _categoryVideos[index];
+        doneActivities[_userVideos.indexOf(categoryVideoId)] = true;
+        var userID = videoProvider.getPref(FirestoreConstants.id);
+        videoProvider.updateDoneActivities(userID, doneActivities);
         sendCompletedMessage(index);
         Navigator.of(context).pop();
       },
@@ -728,7 +753,9 @@ class _PlayPageState extends State<PlayPage> {
       title: Text("Què vols fer amb l'activitat?"),
       content: Text(
           "Si has finalitzat l'activitat sense cap prblema, prem el botó 'Completar'. Si pel contrari tens problemes per dur-la a terme, prem el botó 'Demanar Ajuda'."),
-      actions: [cancelButton, helpButton, completedButton],
+      actions: doneActivities[_userVideos.indexOf(_categoryVideos[index])]
+          ? [cancelButton, helpButton]
+          : [cancelButton, helpButton, completedButton],
     );
     // show the dialog
 
@@ -746,10 +773,12 @@ class PlayPageArguments {
   final List<String> userVideos;
   final String categoryName;
   final List<String> categoryVideos;
+  final List<bool> doneActivities;
 
   PlayPageArguments(
       {required this.videos,
       required this.userVideos,
+      required this.doneActivities,
       required this.categoryName,
       required this.categoryVideos});
 }

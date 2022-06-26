@@ -26,5 +26,7 @@ class FirestoreConstants {
   static const nomTerapeuta = "nomTerapeuta";
   static const cognomsTerapeuta = "cognomsTerapeuta";
   static const dataNaixement = "dataNaixement";
-    static const teraphistId = "teraphistId";
+  static const teraphistId = "teraphistId";
+  static const email = "email";
+  static const llistaActivitatsFetes = "llistaActivitatsFetes";
 }

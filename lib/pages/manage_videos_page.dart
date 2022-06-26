@@ -20,6 +20,7 @@ class _ManageVideosState extends State<ManageVideos> {
   late CategoryProvider videoProvider;
   late ManageVideosProvider manageVideosProvider;
   late List<String> videosStringList;
+  late List<bool> doneActivities;
   Future<List<Video>> currentVideos = Future.value([]);
 
   List<Video> get _clips {
@@ -40,11 +41,14 @@ class _ManageVideosState extends State<ManageVideos> {
     manageVideosProvider = context.read<ManageVideosProvider>();
     currentVideos = Future.value(_clips);
     videosStringList = _userVideos;
+    doneActivities = List.filled(videosStringList.length, false);
     manageVideosProvider
         .getUserActivitiesList(_patientId)
         .listen((event) async {
       if (event.docs.isNotEmpty) {
         videosStringList = event.docs[0].get("llistaVideos").cast<String>();
+        doneActivities =
+            event.docs[0].get("llistaActivitatsFetes").cast<bool>();
         setState(() {
           currentVideos =
               manageVideosProvider.getUserVideoList(videosStringList);
@@ -89,20 +93,31 @@ class _ManageVideosState extends State<ManageVideos> {
                   padding: EdgeInsets.all(8.0),
                   child: IconButton(
                     onPressed: () {
-                      showAlertDialog(context, userActivity);
+                      showAlertDialog(context, userActivity, index);
                     },
                     icon: Icon(
                       Icons.delete,
                       color: Colors.red,
                     ),
-                  ))
+                  )),
+              if (doneActivities.isNotEmpty && doneActivities.asMap().containsKey(index))
+                if (doneActivities[videosStringList.indexOf(userActivity.videoId)])
+                  Positioned(
+                    // will be positioned in the top right of the container
+                    top: 0,
+                    right: 0,
+                    child: Icon(
+                      Icons.check_circle_outline,
+                      color: Colors.green,
+                    ),
+                  )
             ],
           ),
         ),
         color: Colors.white);
   }
 
-  showAlertDialog(BuildContext context, activity) {
+  showAlertDialog(BuildContext context, activity, index) {
     // set up the buttons
     Widget cancelButton = FlatButton(
       child: Text("Cancel·lar"),
@@ -115,7 +130,9 @@ class _ManageVideosState extends State<ManageVideos> {
       onPressed: () {
         String videoId = activity.videoId;
         videosStringList.remove(videoId);
+        doneActivities.removeAt(index);
         videoProvider.updateActivitiesList(_patientId, videosStringList);
+        videoProvider.updateDoneActivities(_patientId, doneActivities);
         Navigator.of(context).pop();
       },
     );

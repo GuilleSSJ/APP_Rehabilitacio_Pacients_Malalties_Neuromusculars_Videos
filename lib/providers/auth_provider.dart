@@ -111,6 +111,9 @@ class AuthProvider extends ChangeNotifier {
           // Write data to local
           await prefs.setString(FirestoreConstants.id, userChat.id);
           await prefs.setString(FirestoreConstants.nom, userChat.nom);
+          
+          await prefs.setString(FirestoreConstants.email, userChat.email);
+         
           await prefs.setString(
               FirestoreConstants.cognoms, documentSnapshot.get("cognoms"));
           await prefs.setString(FirestoreConstants.chattingWith,
@@ -141,8 +144,8 @@ class AuthProvider extends ChangeNotifier {
           } else {
             await prefs.setStringList(FirestoreConstants.llistaPacients,
                 documentSnapshot.get("llistaPacients").cast<String>());
-            await prefs.setString(
-                FirestoreConstants.teraphistId, documentSnapshot.get("id"));
+            await prefs.setString(FirestoreConstants.teraphistId,
+                documentSnapshot.get("id"));
           }
         }
         _status = Status.authenticated;
@@ -224,6 +227,7 @@ class AuthProvider extends ChangeNotifier {
       String surname, String nhc, String date, String therapistId) async {
     NVRUser nvrUser = NVRUser(
         id: user!.uid,
+        email: user.email.toString(),
         nom: name,
         cognoms: surname,
         nhc: nhc,
@@ -231,7 +235,8 @@ class AuthProvider extends ChangeNotifier {
         videos: [],
         isAdmin: false,
         chattingWith: therapistId,
-        patientsIdList: []);
+        patientsIdList: [],
+        doneActivities: []);
     await firebaseFirestore
         .collection(FirestoreConstants.pathUserCollection)
         .doc(user.uid)
@@ -244,12 +249,11 @@ class AuthProvider extends ChangeNotifier {
       "llistaPacients": FieldValue.arrayUnion([user.uid])
     });
 
-    List<String> llistaPacients =
-        prefs.getStringList("llistaPacients")!.cast<String>();
+    List <String> llistaPacients = prefs.getStringList("llistaPacients")!.cast<String>();
     llistaPacients.add(user.uid);
 
-    await prefs.setStringList(
-        FirestoreConstants.llistaPacients, llistaPacients);
+    await prefs.setStringList(FirestoreConstants.llistaPacients,
+               llistaPacients);
 
     Fluttertoast.showToast(msg: "Pacient registrat amb èxit! :) ");
   }

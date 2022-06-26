@@ -97,11 +97,32 @@ class CategoryProvider {
     return assignedVideos;
   }
 
+   Future<List<bool>> getPatientDoneActivities(String patientId) async {
+    List<bool> doneActivities = [];
+    final QuerySnapshot result = await firebaseFirestore
+        .collection(FirestoreConstants.pathUserCollection)
+        .where(FirestoreConstants.id, isEqualTo: patientId)
+        .get();
+
+    final List<DocumentSnapshot> documents = result.docs;
+    if (documents.length > 0) {
+      doneActivities = documents[0].get("llistaActivitatsFetes").cast<bool>();
+    }
+    return doneActivities;
+  }
+
   void updateActivitiesList(patientId, List<String> assignedVideos) {
     FirebaseFirestore.instance
         .collection(FirestoreConstants.pathUserCollection)
         .doc(patientId)
         .update({'llistaVideos': assignedVideos});
+  }
+
+    void updateDoneActivities(userId, List<bool> doneActivities) {
+    FirebaseFirestore.instance
+        .collection(FirestoreConstants.pathUserCollection)
+        .doc(userId)
+        .update({'llistaActivitatsFetes': doneActivities});
   }
 
   Stream<QuerySnapshot> getCategoriesStreamFirestore() {

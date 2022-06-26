@@ -49,6 +49,8 @@ class _PagePrincipalState extends State<PagePrincipal> {
                   authProvider.getStringPref(FirestoreConstants.nomTerapeuta)!,
               peerCognoms: authProvider
                   .getStringPref(FirestoreConstants.cognomsTerapeuta)!,
+              subjectEmail: "",
+              recipientEmail: ""
         ),
         ),
         Profile(),
@@ -70,7 +72,7 @@ class _PagePrincipalState extends State<PagePrincipal> {
         items: isAdmin
             ? const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.video_collection_outlined),
+                  icon: Icon(Icons.people),
                   label: 'Vídeos',
                 ),
                 BottomNavigationBarItem(

@@ -18,7 +18,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../widgets/widgets.dart';
 import 'login_page.dart';
-
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 class ChatPage extends StatefulWidget {
   ChatPage({Key? key, required this.arguments}) : super(key: key);
@@ -627,12 +627,10 @@ class ChatPageState extends State<ChatPage> {
               children: <Widget>[
                 // List of messages
                 buildListMessage(),
-
                 // Sticker
                 //isShowSticker ? buildSticker() : SizedBox.shrink(),
-
+                       buildInput(),
                 // Input content
-                buildInput(),
               ],
             ),
 
@@ -765,8 +763,15 @@ class ChatPageState extends State<ChatPage> {
               margin: EdgeInsets.symmetric(horizontal: 8),
               child: IconButton(
                 icon: Icon(Icons.send),
-                onPressed: () =>
-                    onSendMessage(textEditingController.text, TypeMessage.text),
+                onPressed: () {
+                  onSendMessage(textEditingController.text, TypeMessage.text);
+                  final Email email = Email(
+                    body: "NVR APP. Has rebut el següent missatge: " + textEditingController.text,
+                    subject: widget.arguments.subjectEmail,
+                    recipients: ["tesidiez@gmail.com"],
+                  );
+                  //FlutterEmailSender.send(email);
+                },
                 color: ColorConstants.primaryColor,
               ),
             ),
@@ -842,7 +847,13 @@ class ChatPageArguments {
   final String peerId;
   final String peerCognoms;
   final String peerNom;
+  final String subjectEmail;
+  final String recipientEmail;
 
   ChatPageArguments(
-      {required this.peerId, required this.peerNom, required this.peerCognoms});
+      {required this.peerId,
+      required this.peerNom,
+      required this.peerCognoms,
+      required this.subjectEmail,
+      required this.recipientEmail});
 }
