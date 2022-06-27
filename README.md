@@ -1,7 +1,5 @@
 # app_video_rehabilitacio_neuromuscular
 
-A new Flutter project.
-
 ## Getting Started:
 1. Install Visual Studio Code & Android Studio.
 2. Download Flutter & Dart SDKs.
