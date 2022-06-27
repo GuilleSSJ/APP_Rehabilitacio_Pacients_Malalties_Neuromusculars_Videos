@@ -130,7 +130,7 @@ class _PatientsListState extends State<PatientsList> {
           backgroundColor: Colors.orange,
           centerTitle: true,
           title: Text(
-            'Manteniment Pacients',
+            'Manteniment',
             style:
                 TextStyle(fontSize: 16.0, fontFamily: 'Glacial Indifference'),
           ),
