@@ -2,15 +2,10 @@
 
 A new Flutter project.
 
-## Getting Started
+## Getting Started:
+1. Install Visual Studio Code & Android Studio.
+2. Download Flutter & Dart SDKs.
+3. Follow this guide for installing and setting up in Windows: <a href="https://docs.flutter.dev/get-started/install/windows">Flutter installation and setup in Visual Studio Code</a>
+4. Open the TFG project: Click File > Open from the main IDE window. Browse to the directory holding your existing Flutter source code files.Click Open.
+5. Run the NVR app: Click Run > Start Debugging. Then choose the configurated virtual device.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
