@@ -100,7 +100,7 @@ class _ManageVideosState extends State<ManageVideos> {
                       color: Colors.red,
                     ),
                   )),
-              if (doneActivities.isNotEmpty && doneActivities.asMap().containsKey(index))
+              if (doneActivities.isNotEmpty && doneActivities.asMap().containsKey(videosStringList.indexOf(userActivity.videoId)))
                 if (doneActivities[videosStringList.indexOf(userActivity.videoId)])
                   Positioned(
                     // will be positioned in the top right of the container
@@ -129,8 +129,8 @@ class _ManageVideosState extends State<ManageVideos> {
       child: Text("OK"),
       onPressed: () {
         String videoId = activity.videoId;
+         doneActivities.removeAt(videosStringList.indexOf(videoId));
         videosStringList.remove(videoId);
-        doneActivities.removeAt(index);
         videoProvider.updateActivitiesList(_patientId, videosStringList);
         videoProvider.updateDoneActivities(_patientId, doneActivities);
         Navigator.of(context).pop();
