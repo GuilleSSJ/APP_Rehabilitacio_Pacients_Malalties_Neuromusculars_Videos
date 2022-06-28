@@ -629,7 +629,7 @@ class ChatPageState extends State<ChatPage> {
                 buildListMessage(),
                 // Sticker
                 //isShowSticker ? buildSticker() : SizedBox.shrink(),
-                       buildInput(),
+                buildInput(),
                 // Input content
               ],
             ),
@@ -740,6 +740,7 @@ class ChatPageState extends State<ChatPage> {
 
           // Edit text
           Flexible(
+            flex: 1,
             child: Container(
               child: TextField(
                 onSubmitted: (value) {
@@ -766,7 +767,8 @@ class ChatPageState extends State<ChatPage> {
                 onPressed: () {
                   onSendMessage(textEditingController.text, TypeMessage.text);
                   final Email email = Email(
-                    body: "NVR APP. Has rebut el següent missatge: " + textEditingController.text,
+                    body: "NVR APP. Has rebut el següent missatge: " +
+                        textEditingController.text,
                     subject: widget.arguments.subjectEmail,
                     recipients: ["tesidiez@gmail.com"],
                   );
